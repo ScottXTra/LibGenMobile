@@ -4,14 +4,10 @@ import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
 
-<<<<<<< HEAD
-
-=======
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
 }
->>>>>>> f0f77ea2d0e803a2712647a6ece106a31c340c27
 class _HomePageState extends State<HomePage> {
   late Map data;
   List userData = [];
