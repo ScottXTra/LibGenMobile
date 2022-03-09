@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
 
-class HomePage extends StatefulWidget {
+class book_search extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -24,7 +24,7 @@ class Debouncer {
   }
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<book_search> {
   final _debouncer = Debouncer();
   String term = "demo";
   List<BookData> ulist = [];
@@ -69,10 +69,16 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Search Books',
-          style: TextStyle(fontSize: 25),
+        title: const Text(
+          "Search",
         ),
+        centerTitle: false,
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.settings),
+          ),
+        ],
       ),
       body: Column(
         children: <Widget>[
