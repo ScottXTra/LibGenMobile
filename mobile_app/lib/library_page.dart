@@ -3,7 +3,7 @@ Page Author: Karan Swatch
 */
 
 //TODO: fix styling everywhere
-// fix top two buttons to not be epanded
+// fix top two buttons to not be expanded
 // link to other pages
 // add sort functionality
 // bottom nav bar?
