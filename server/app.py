@@ -12,10 +12,16 @@ def hello():
     # return 'Hello, World!'
 
 @app.route('/search_book')
-def get_report():
+def search_book():
     term = request.args.get('term')
    
     return search_books(term)
+
+@app.route('/get_download_links')
+def get_download_links():
+    term = request.args.get('mirror')
+   
+    return get_CF_pdf(term)
 
 
 
