@@ -1,19 +1,14 @@
-/**
-Page Author: Karan Swatch
-*/
-
 //TODO: fix styling everywhere
-// fix top two buttons to not be expanded
-// link to other pages
-// add sort functionality
-// bottom nav bar?
 // pulling real data from phone
 // how will "new" stuff work
 // if time change list and grid view to rearrangleable version for manually sort
 
 import 'package:flutter/material.dart';
-//TODO: CHANGE DIS
 import 'attractions.dart';
+import 'package:open_file/open_file.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'package:epub_viewer/epub_viewer.dart';
 
 class library_page extends StatefulWidget {
   @override
@@ -22,6 +17,7 @@ class library_page extends StatefulWidget {
 
 class _library_pageState extends State<library_page> {
   bool _tappedList = false;
+  String sortMethod = 'Recent';
 
   @override
   Widget build(BuildContext context) {
@@ -41,22 +37,36 @@ class _library_pageState extends State<library_page> {
       body: Column(
         children: [
           sortAndList(
-            updateParent: refresh,
+            updateParentGridList: refreshGridList,
+            updateParentSorting: refreshSorting,
           ),
-          Expanded(child: _tappedList ? BooksListView() : BooksGridView()),
+          Expanded(
+            child: _tappedList
+                ? BooksListView(sortingMethod: sortMethod)
+                : BooksGridView(sortingMethod: sortMethod),
+          ),
         ],
       ),
     );
   }
 
-  refresh() {
+  refreshGridList() {
     setState(() {
       _tappedList = !_tappedList;
+    });
+  }
+
+  refreshSorting(String value) {
+    setState(() {
+      sortMethod = value;
     });
   }
 }
 
 class BooksGridView extends StatefulWidget {
+  final String sortingMethod;
+  const BooksGridView({Key? key, this.sortingMethod = ""}) : super(key: key);
+
   @override
   State<BooksGridView> createState() => _BooksGridViewState();
 }
@@ -64,8 +74,12 @@ class BooksGridView extends StatefulWidget {
 class _BooksGridViewState extends State<BooksGridView> {
   @override
   Widget build(BuildContext context) {
-    // TODO: CHANGE DIS
     List books = dummy_data;
+
+    books.sort((a, b) {
+      return a[widget.sortingMethod.toLowerCase()]
+          .compareTo(b[widget.sortingMethod.toLowerCase()]);
+    });
     return GridView.count(
       crossAxisCount: 2,
       children: [
@@ -77,7 +91,26 @@ class _BooksGridViewState extends State<BooksGridView> {
 
   Widget SingleBookGridView(String url) {
     return GestureDetector(
-      onTap: () {},
+      onTap: () async {
+        Directory tempDir = await getApplicationDocumentsDirectory();
+        String tempPath = tempDir.path;
+
+        // for opening pdb
+        EpubViewer.setConfig(
+          themeColor: Theme.of(context).primaryColor,
+          identifier: "iosBook",
+          scrollDirection: EpubScrollDirection.VERTICAL,
+          allowSharing: true,
+          enableTts: true,
+        );
+        EpubViewer.open(
+          tempPath +
+              "/Rick Riordan - The Lightning Thief (Percy Jackson and the Olympians, Book 1)  -Disney-Hyperion (2005).epub",
+        );
+        //for opening anything
+        // OpenFile.open(tempPath +
+        //     "/Rick Riordan - The Lightning Thief (Percy Jackson and the Olympians, Book 1)  -Disney-Hyperion (2005).epub");
+      },
       child: Column(
         children: [
           Expanded(
@@ -96,6 +129,8 @@ class _BooksGridViewState extends State<BooksGridView> {
 }
 
 class BooksListView extends StatefulWidget {
+  final String sortingMethod;
+  const BooksListView({Key? key, this.sortingMethod = ""}) : super(key: key);
   @override
   State<BooksListView> createState() => _BooksListViewState();
 }
@@ -103,8 +138,11 @@ class BooksListView extends StatefulWidget {
 class _BooksListViewState extends State<BooksListView> {
   @override
   Widget build(BuildContext context) {
-    // TODO: CHANGE DIS
     List books = dummy_data;
+    books.sort((a, b) {
+      return a[widget.sortingMethod.toLowerCase()]
+          .compareTo(b[widget.sortingMethod.toLowerCase()]);
+    });
     return ListView(
       children: [
         for (int i = 0; i < books.length; i++)
@@ -116,27 +154,51 @@ class _BooksListViewState extends State<BooksListView> {
 
   Widget SingleBookListView(String url, String author, String title) {
     return GestureDetector(
-      onTap: () {},
-      child: Card(
-        child: Row(
-          children: [
-            Image.network(
-              url,
-              fit: BoxFit.cover,
-              alignment: Alignment.centerLeft,
-              height: 100,
-              width: 100,
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(title),
-                Text(author),
-                Text("new"),
-              ],
-            )
-          ],
+      onTap: () async {
+        Directory tempDir = await getApplicationDocumentsDirectory();
+        String tempPath = tempDir.path;
+
+        // for opening pdb
+        EpubViewer.setConfig(
+          themeColor: Theme.of(context).primaryColor,
+          identifier: "iosBook",
+          scrollDirection: EpubScrollDirection.VERTICAL,
+          allowSharing: true,
+          enableTts: true,
+        );
+        EpubViewer.open(
+          tempPath +
+              "/Rick Riordan - The Lightning Thief (Percy Jackson and the Olympians, Book 1)  -Disney-Hyperion (2005).epub",
+        );
+        //for opening anything
+        // OpenFile.open(tempPath +
+        //     "/Rick Riordan - The Lightning Thief (Percy Jackson and the Olympians, Book 1)  -Disney-Hyperion (2005).epub");
+      },
+      child: Container(
+        height: MediaQuery.of(context).size.height / 5,
+        child: Card(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Image.network(
+                url,
+                fit: BoxFit.fill,
+                alignment: Alignment.centerLeft,
+              ),
+              Container(
+                alignment: Alignment.center,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(title),
+                    Text(author),
+                    Text("new"),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -144,8 +206,13 @@ class _BooksListViewState extends State<BooksListView> {
 }
 
 class sortAndList extends StatefulWidget {
-  final Function() updateParent;
-  const sortAndList({Key? key, required this.updateParent}) : super(key: key);
+  final Function() updateParentGridList;
+  final Function(String value) updateParentSorting;
+  const sortAndList(
+      {Key? key,
+      required this.updateParentGridList,
+      required this.updateParentSorting})
+      : super(key: key);
 
   @override
   State<sortAndList> createState() => _sortAndListState();
@@ -162,7 +229,9 @@ class _sortAndListState extends State<sortAndList> {
         Expanded(
           child: Row(
             children: [
+              Padding(padding: EdgeInsets.only(left: 25)),
               Text("Sort"),
+              Padding(padding: EdgeInsets.only(left: 5)),
               DropdownButton(
                 items: <String>['Recent', 'Title', 'Author']
                     .map<DropdownMenuItem<String>>((String value) {
@@ -174,6 +243,7 @@ class _sortAndListState extends State<sortAndList> {
                 onChanged: (String? newValue) {
                   setState(() {
                     _dropdownValue = newValue!;
+                    widget.updateParentSorting(_dropdownValue);
                   });
                 },
                 value: _dropdownValue,
@@ -181,22 +251,22 @@ class _sortAndListState extends State<sortAndList> {
             ],
           ),
         ),
-        Expanded(
-          child: Container(
-            color: _tappedList ? Colors.grey : null,
-            child: IconButton(
-              icon: Icon(
-                Icons.list,
-              ),
-              onPressed: () {
-                setState(() {
-                  _tappedList = !_tappedList;
-                  widget.updateParent();
-                });
-              },
+        Spacer(),
+        Container(
+          color: _tappedList ? Colors.grey : null,
+          child: IconButton(
+            icon: Icon(
+              Icons.list,
             ),
+            onPressed: () {
+              setState(() {
+                _tappedList = !_tappedList;
+                widget.updateParentGridList();
+              });
+            },
           ),
         ),
+        Padding(padding: EdgeInsets.only(right: 35)),
       ],
     );
   }
