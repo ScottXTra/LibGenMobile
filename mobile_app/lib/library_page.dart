@@ -9,6 +9,7 @@ import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:epub_viewer/epub_viewer.dart';
+import 'package:path/path.dart' as p;
 
 class library_page extends StatefulWidget {
   @override
@@ -84,39 +85,43 @@ class _BooksGridViewState extends State<BooksGridView> {
       crossAxisCount: 2,
       children: [
         for (int i = 0; i < books.length; i++)
-          SingleBookGridView(books[i]['image'])
+          SingleBookGridView(
+              books[i]['image'], books[i]['title'] + "_" + books[i]['author'])
       ],
     );
   }
 
-  Widget SingleBookGridView(String url) {
+  Widget SingleBookGridView(String imageUrl, String bookPath) {
     return GestureDetector(
       onTap: () async {
-        Directory tempDir = await getApplicationDocumentsDirectory();
-        String tempPath = tempDir.path;
+        Directory doucmentsDir = await getApplicationDocumentsDirectory();
+        String doucmentsPath = doucmentsDir.path;
 
-        // for opening pdb
-        EpubViewer.setConfig(
-          themeColor: Theme.of(context).primaryColor,
-          identifier: "iosBook",
-          scrollDirection: EpubScrollDirection.VERTICAL,
-          allowSharing: true,
-          enableTts: true,
-        );
-        EpubViewer.open(
-          tempPath +
-              "/Rick Riordan - The Lightning Thief (Percy Jackson and the Olympians, Book 1)  -Disney-Hyperion (2005).epub",
-        );
-        //for opening anything
-        // OpenFile.open(tempPath +
-        //     "/Rick Riordan - The Lightning Thief (Percy Jackson and the Olympians, Book 1)  -Disney-Hyperion (2005).epub");
+        String fullBookPath = doucmentsPath + '/' + bookPath;
+
+        if (await File(fullBookPath + ".pdf").exists()) {
+          //for opening pdf
+          OpenFile.open(fullBookPath + ".pdf");
+        } else if (await File(fullBookPath + ".epub").exists()) {
+          //for opening epub
+          EpubViewer.setConfig(
+            themeColor: Theme.of(context).primaryColor,
+            identifier: "iosBook",
+            scrollDirection: EpubScrollDirection.VERTICAL,
+            allowSharing: true,
+            enableTts: true,
+          );
+          EpubViewer.open(fullBookPath + ".epub");
+        }
+
+        // for opening pdf
       },
       child: Column(
         children: [
           Expanded(
             child: Card(
               child: Image.network(
-                url,
+                imageUrl,
                 fit: BoxFit.fill,
               ),
             ),
@@ -146,33 +151,37 @@ class _BooksListViewState extends State<BooksListView> {
     return ListView(
       children: [
         for (int i = 0; i < books.length; i++)
-          SingleBookListView(
-              books[i]['image'], books[i]['author'], books[i]['title'])
+          SingleBookListView(books[i]['image'], books[i]['author'],
+              books[i]['title'], books[i]['title'] + "_" + books[i]['author'])
       ],
     );
   }
 
-  Widget SingleBookListView(String url, String author, String title) {
+  Widget SingleBookListView(
+      String url, String author, String title, String bookPath) {
     return GestureDetector(
       onTap: () async {
-        Directory tempDir = await getApplicationDocumentsDirectory();
-        String tempPath = tempDir.path;
+        Directory doucmentsDir = await getApplicationDocumentsDirectory();
+        String doucmentsPath = doucmentsDir.path;
 
-        // for opening pdb
-        EpubViewer.setConfig(
-          themeColor: Theme.of(context).primaryColor,
-          identifier: "iosBook",
-          scrollDirection: EpubScrollDirection.VERTICAL,
-          allowSharing: true,
-          enableTts: true,
-        );
-        EpubViewer.open(
-          tempPath +
-              "/Rick Riordan - The Lightning Thief (Percy Jackson and the Olympians, Book 1)  -Disney-Hyperion (2005).epub",
-        );
-        //for opening anything
-        // OpenFile.open(tempPath +
-        //     "/Rick Riordan - The Lightning Thief (Percy Jackson and the Olympians, Book 1)  -Disney-Hyperion (2005).epub");
+        String fullBookPath = doucmentsPath + '/' + bookPath;
+
+        if (await File(fullBookPath + ".pdf").exists()) {
+          //for opening pdf
+          OpenFile.open(fullBookPath + ".pdf");
+        } else if (await File(fullBookPath + ".epub").exists()) {
+          //for opening epub
+          EpubViewer.setConfig(
+            themeColor: Theme.of(context).primaryColor,
+            identifier: "iosBook",
+            scrollDirection: EpubScrollDirection.VERTICAL,
+            allowSharing: true,
+            enableTts: true,
+          );
+          EpubViewer.open(fullBookPath + ".epub");
+        }
+
+        // for opening pdf
       },
       child: Container(
         height: MediaQuery.of(context).size.height / 5,
