@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
-
+import 'preview_page.dart';
 class book_search extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
@@ -126,7 +126,15 @@ class _HomePageState extends State<book_search> {
               padding: EdgeInsets.all(5),
               itemCount: userLists.length,
               itemBuilder: (BuildContext context, int index) {
-                return Card(
+                return 
+                GestureDetector(
+                  onTap: () { Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => Preview_page(),
+                    ),
+                  );},
+                  child:Card(
+                  
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                     side: BorderSide(
@@ -134,8 +142,10 @@ class _HomePageState extends State<book_search> {
                     ),
                   ),
                   child: Padding(
+                    
                     padding: EdgeInsets.all(5.0),
                     child: Column(
+                      
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
@@ -153,7 +163,11 @@ class _HomePageState extends State<book_search> {
                       ],
                     ),
                   ),
-                );
+                ) ,
+
+
+                )
+                ;
               },
             ),
           ),

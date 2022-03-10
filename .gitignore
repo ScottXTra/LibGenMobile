@@ -6,3 +6,7 @@ mobile_app/ios/Runner.xcodeproj/project.pbxproj
 mobile_app/ios/Runner.xcworkspace/contents.xcworkspacedata
 server/__pycache__/app.cpython-39.pyc
 server/__pycache__/scrape.cpython-39.pyc
+mobile_app/ios/Flutter/Debug.xcconfig
+mobile_app/ios/Flutter/Release.xcconfig
+mobile_app/ios/Runner.xcodeproj/project.pbxproj
+mobile_app/ios/Runner.xcworkspace/contents.xcworkspacedata
