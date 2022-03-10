@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:epub_viewer/epub_viewer.dart';
 import 'package:path/path.dart' as p;
+import 'settings_page.dart';
 
 class library_page extends StatefulWidget {
   @override
@@ -25,7 +26,13 @@ class _library_pageState extends State<library_page> {
         centerTitle: false,
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => SettingsPage(),
+                ),
+              );
+            },
             icon: Icon(Icons.settings),
           ),
         ],
