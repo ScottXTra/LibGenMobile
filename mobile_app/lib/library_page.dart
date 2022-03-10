@@ -1,8 +1,3 @@
-//TODO: fix styling everywhere
-// pulling real data from phone
-// how will "new" stuff work
-// if time change list and grid view to rearrangleable version for manually sort
-
 import 'package:flutter/material.dart';
 import 'attractions.dart';
 import 'package:open_file/open_file.dart';
