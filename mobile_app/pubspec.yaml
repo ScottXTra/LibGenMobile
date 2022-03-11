@@ -40,10 +40,7 @@ dependencies:
   http: ^0.13.4
   simple_shadow: ^0.3.0
   url_launcher: ^6.0.3
-  path_provider: ^2.0.9
   flutter_downloader: ^1.7.2
-  open_file: ^3.2.1
-  epub_viewer: ^0.2.5
 
 dev_dependencies:
   flutter_test:
