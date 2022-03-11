@@ -6,7 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 final ButtonStyle buttonStyle = ElevatedButton.styleFrom(
   minimumSize: const Size(200, 0),
   padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
-  primary: Colors.green,
+  primary: Colors.red,
   textStyle: const TextStyle(fontSize: 17),
 );
 
@@ -42,14 +42,14 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor: Colors.grey[900],
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.grey[850],
           centerTitle: true,
           title: const Text(
             "Settings",
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 35),
           ),
           leading: IconButton(
               onPressed: () {
@@ -57,10 +57,11 @@ class _SettingsPageState extends State<SettingsPage> {
               },
               icon: Icon(Icons.arrow_back, color: Colors.white)),
         ),
-        body: Center(
+        body: SafeArea(
+          child: Center(
             child: Padding(
-          padding: const EdgeInsets.fromLTRB(0, 30, 0, 10),
-          child: Column(
+            padding: const EdgeInsets.fromLTRB(0, 30, 0, 10),
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 Column(
@@ -69,7 +70,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     children: <Widget>[
                       const Text(
                         "Options",
-                        style: TextStyle(fontSize: 27),
+                        style: TextStyle(fontSize: 27, color: Colors.white),
                       ),
                       AlertDialogButton(
                           buttonText: "Get Support",
@@ -133,7 +134,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 Column(children: <Widget>[
                   const Text(
                     "Rate our app",
-                    style: TextStyle(fontSize: 27),
+                    style: TextStyle(fontSize: 27, color: Colors.white),
                   ),
                   FiveStarRating(),
                   AlertDialogButton(
@@ -148,23 +149,23 @@ class _SettingsPageState extends State<SettingsPage> {
                 Column(children: const <Widget>[
                   Text(
                     "About Us",
-                    style: TextStyle(fontSize: 27),
+                    style: TextStyle(fontSize: 27, color: Colors.white),
                   ),
                   Center(
                       child: Padding(
                           padding: EdgeInsets.fromLTRB(40, 0, 40, 0),
                           child: Text(
-                            "We are a small team of five 3rd and 4th year University students at the University of Guelph, and have created this project for our Mobile Development class CIS4030. We believe that everybody should have free access to information, so that was our main inspiration for creating this mobile version of the Libgen Website.",
-                            style: TextStyle(fontSize: 15),
+                            "We are a small team of five 3rd - 5th year University students at the University of Guelph, and have created this project for our Mobile Development class CIS4030. We believe that everybody should have free access to information, so that was our main inspiration for creating this mobile version of the Libgen Website.",
+                            style: TextStyle(fontSize: 15, color: Colors.white),
                             textAlign: TextAlign.justify,
                           ))),
                 ]),
                 const Text(
                   "©2022 LIBGEN MOBILE, ALL RIGHTS RESERVED, V1.0",
-                  style: TextStyle(fontSize: 10),
+                  style: TextStyle(fontSize: 10, color: Colors.white),
                 ),
               ]),
-        )));
+        ))));
   }
 }
 
