@@ -6,7 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 final ButtonStyle buttonStyle = ElevatedButton.styleFrom(
   minimumSize: const Size(200, 0),
   padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
-  primary: Colors.red,
+  primary: Colors.green,
   textStyle: const TextStyle(fontSize: 17),
 );
 
