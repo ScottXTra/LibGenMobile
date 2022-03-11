@@ -143,8 +143,9 @@ class _HomePageState extends State<book_search> {
                 return GestureDetector(
                   onTap: () {
                     Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => Preview_page(),
+                      PageRouteBuilder(
+                        opaque: false,
+                        pageBuilder: (context, __, ___) => Preview_page(),
                       ),
                     );
                   },

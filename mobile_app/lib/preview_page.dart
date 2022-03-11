@@ -95,14 +95,19 @@ class _Library_button extends State<Library_button> {
     return ElevatedButton(
       style: ButtonStyle(
           backgroundColor: MaterialStateProperty.all<Color>(Colors.black),
-          shape: MaterialStateProperty.all<RoundedRectangleBorder>(RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)))),
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)))),
       onPressed: () async {
         /** Check first if the file we are working with already exists */
         bool doesFileExixt = await doesFileExist(widget.index);
 
         String downloadLink = dummy_data[widget.index]["file"];
-        String extension = "." + dummy_data[widget.index]["file"].split(".").last;
-        String fullFileName = dummy_data[widget.index]["title"] + "_" + dummy_data[widget.index]["author"] + extension;
+        String extension =
+            "." + dummy_data[widget.index]["file"].split(".").last;
+        String fullFileName = dummy_data[widget.index]["title"] +
+            "_" +
+            dummy_data[widget.index]["author"] +
+            extension;
         Directory destinationDirect = await getApplicationDocumentsDirectory();
         String stringDestinationDirect = destinationDirect.path;
 
@@ -110,13 +115,10 @@ class _Library_button extends State<Library_button> {
           /** downloadlink : represents link to download the pdf, extension: the extension of the file, 
                                    * destinationDirect : the path to store into the local storage
                                    */
-          await downloadFile(downloadLink, fullFileName, stringDestinationDirect);
+          await downloadFile(
+              downloadLink, fullFileName, stringDestinationDirect);
         } else {
           /*Since the file already exists here update the state */
-          setState(() {
-            blockButton = true;
-          });
-
           /*For viewing we want to view it a differnent way for epubs */
           String openFile = stringDestinationDirect + "/" + fullFileName;
           if (extension == ".pdf") {
@@ -132,6 +134,9 @@ class _Library_button extends State<Library_button> {
             EpubViewer.open(openFile);
           }
         }
+        setState(() {
+          blockButton = true;
+        });
       },
       child: blockButton ? Text("View File") : Text("Add to library"),
     );
@@ -143,7 +148,8 @@ be scrolled on either direction based on length of
 the previous search results */
 class _Preview_page extends State<Preview_page> {
   /** Temporary styles using here for now, can be moved somewhere else later */
-  titles() => const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white);
+  titles() => const TextStyle(
+      fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white);
   info() => const TextStyle(fontSize: 14, color: Colors.white);
 
   @override
@@ -156,7 +162,7 @@ class _Preview_page extends State<Preview_page> {
         appBar: AppBar(
           backgroundColor: Colors.black,
         ),
-        backgroundColor: Colors.black,
+        backgroundColor: Color.fromRGBO(0, 0, 0, 0.0),
         /** We want to have cards that can be scrolled horizontally 
          * while allowing the user to snap the card in place
         */
@@ -168,7 +174,8 @@ class _Preview_page extends State<Preview_page> {
                 height: height,
                 width: width,
                 child: Card(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                     color: Colors.grey[850],
                     child: ListView(
                       scrollDirection: Axis.vertical,
@@ -179,7 +186,10 @@ class _Preview_page extends State<Preview_page> {
                           padding: EdgeInsets.only(top: 10.0, right: 10.0),
                           child: Align(
                               alignment: Alignment.topRight,
-                              child: IconButton(onPressed: () {}, icon: Icon(Icons.cancel, color: Colors.grey[400]))),
+                              child: IconButton(
+                                  onPressed: () {},
+                                  icon: Icon(Icons.cancel,
+                                      color: Colors.grey[400]))),
                         ),
                         /* The main image for the book*/
                         Align(
@@ -189,7 +199,8 @@ class _Preview_page extends State<Preview_page> {
                                 color: Colors.white,
                                 offset: const Offset(5, 5),
                                 sigma: 10,
-                                child: Image.network(dummy_data[index]["image"], width: 250, height: 500))),
+                                child: Image.network(dummy_data[index]["image"],
+                                    width: 250, height: 500))),
                         /*Any further  information regarding the author*/
                         Column(
                           children: [
@@ -222,7 +233,12 @@ Future<bool> doesFileExist(int index) async {
   String dest = destinationDirectory.path;
 
   String extension = "." + dummy_data[index]["file"].split(".").last;
-  String fullPath = dest + "/" + dummy_data[index]["title"] + "_" + dummy_data[index]["author"] + extension; //file to be located is formed
+  String fullPath = dest +
+      "/" +
+      dummy_data[index]["title"] +
+      "_" +
+      dummy_data[index]["author"] +
+      extension; //file to be located is formed
 
   /** Check if this file currently exists in the local storage */
   if (await File(fullPath).exists()) {
