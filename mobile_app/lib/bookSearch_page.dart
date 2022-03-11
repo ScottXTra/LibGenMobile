@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
+import 'preview_page.dart';
+import 'settings_page.dart';
 
 class book_search extends StatefulWidget {
   @override
@@ -31,7 +33,7 @@ class _HomePageState extends State<book_search> {
   List<BookData> userLists = [];
   //API call for All BookData List
 
-  String url = 'http://10.0.0.22:3000/search_book?term=';
+  String url = 'http://192.168.2.27:3000/search_book?term=';
 
   Future<List<BookData>> getAllulistList() async {
     try {
@@ -68,14 +70,20 @@ class _HomePageState extends State<book_search> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[900],
       appBar: AppBar(
-        title: const Text(
-          "Search",
-        ),
+        title: const Text("Book Search", style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.grey[850],
         centerTitle: false,
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => SettingsPage(),
+                ),
+              );
+            },
             icon: Icon(Icons.settings),
           ),
         ],
@@ -86,25 +94,31 @@ class _HomePageState extends State<book_search> {
           Container(
             padding: EdgeInsets.all(15),
             child: TextField(
+              style: TextStyle(color: Colors.red),
+              cursorColor: Colors.white,
               textInputAction: TextInputAction.search,
               decoration: InputDecoration(
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(25.0),
                   borderSide: BorderSide(
-                    color: Colors.grey,
+                    color: Colors.grey.shade500,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20.0),
                   borderSide: BorderSide(
-                    color: Colors.blue,
+                    color: Colors.white,
                   ),
                 ),
                 suffixIcon: InkWell(
-                  child: Icon(Icons.search),
+                  child: Icon(
+                    Icons.search,
+                    color: Colors.red,
+                  ),
                 ),
                 contentPadding: EdgeInsets.all(15.0),
                 hintText: 'Search ',
+                hintStyle: TextStyle(color: Colors.grey[500]),
               ),
               onSubmitted: (string) {
                 _debouncer.run(() {
@@ -126,31 +140,43 @@ class _HomePageState extends State<book_search> {
               padding: EdgeInsets.all(5),
               itemCount: userLists.length,
               itemBuilder: (BuildContext context, int index) {
-                return Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    side: BorderSide(
-                      color: Colors.grey.shade300,
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => Preview_page(),
+                      ),
+                    );
+                  },
+                  child: Card(
+                    color: Colors.grey[800],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      side: BorderSide(
+                        color: Colors.grey.shade500,
+                      ),
                     ),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.all(5.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        ListTile(
-                          title: Text(
-                            userLists[index].title,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: 16),
-                          ),
-                          subtitle: Text(
-                            userLists[index].author ?? "null",
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        )
-                      ],
+                    child: Padding(
+                      padding: EdgeInsets.all(5.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          ListTile(
+                            title: Text(
+                              userLists[index].title,
+                              overflow: TextOverflow.ellipsis,
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.white),
+                            ),
+                            subtitle: Text(
+                              userLists[index].author ?? "null",
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 12, color: Colors.red),
+                            ),
+                          )
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -169,7 +195,7 @@ class BookData {
   var id;
   var author;
   String title;
-  
+
   BookData({
     required this.id,
     required this.author,

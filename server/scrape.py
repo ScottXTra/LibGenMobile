@@ -34,7 +34,7 @@ def get_CF_pdf(mirror_url):
     li_s = ul_table.findAll('li')
     for li in li_s:
         dl_links.append(li.find('a')['href'])
-    return dl_links
+    return json.dumps(dl_links)
 
 #print(get_CF_pdf('http://library.lol/main/025976AAF38AAF99710D036A256D315C'))
 
