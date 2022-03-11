@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:loginscreen/library_page.dart';
+import 'package:loginscreen/main.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:simple_shadow/simple_shadow.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
@@ -80,7 +81,9 @@ class Preview_page extends StatefulWidget {
 
 class Library_button extends StatefulWidget {
   final int index;
-  Library_button({required this.index});
+  final Function libraryCallback;
+  final List<bool> buttonStates;
+  Library_button({required this.index, required this.libraryCallback, required this.buttonStates});
 
   @override
   State<Library_button> createState() => _Library_button();
@@ -91,23 +94,25 @@ class _Library_button extends State<Library_button> {
   bool blockButton = false;
 
   @override
+  void initState() {
+    super.initState();
+    blockButton = widget.buttonStates[widget.index];
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ElevatedButton(
       style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all<Color>(Colors.black),
-          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)))),
+          backgroundColor:
+              blockButton ? MaterialStateProperty.all(Colors.grey[700]) : MaterialStateProperty.all(Colors.black.withOpacity(0.3)),
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)))),
       onPressed: () async {
         /** Check first if the file we are working with already exists */
         bool doesFileExixt = await doesFileExist(widget.index);
 
         String downloadLink = dummy_data[widget.index]["file"];
-        String extension =
-            "." + dummy_data[widget.index]["file"].split(".").last;
-        String fullFileName = dummy_data[widget.index]["title"] +
-            "_" +
-            dummy_data[widget.index]["author"] +
-            extension;
+        String extension = "." + dummy_data[widget.index]["file"].split(".").last;
+        String fullFileName = dummy_data[widget.index]["title"] + "_" + dummy_data[widget.index]["author"] + extension;
         Directory destinationDirect = await getApplicationDocumentsDirectory();
         String stringDestinationDirect = destinationDirect.path;
 
@@ -115,8 +120,7 @@ class _Library_button extends State<Library_button> {
           /** downloadlink : represents link to download the pdf, extension: the extension of the file, 
                                    * destinationDirect : the path to store into the local storage
                                    */
-          await downloadFile(
-              downloadLink, fullFileName, stringDestinationDirect);
+          await downloadFile(downloadLink, fullFileName, stringDestinationDirect);
         } else {
           /*Since the file already exists here update the state */
           /*For viewing we want to view it a differnent way for epubs */
@@ -137,6 +141,11 @@ class _Library_button extends State<Library_button> {
         setState(() {
           blockButton = true;
         });
+
+        /** Once we set the state here we will change it so that once 
+         * its passed in again 
+        */
+        widget.libraryCallback(blockButton, widget.index);
       },
       child: blockButton ? Text("View File") : Text("Add to library"),
     );
@@ -148,9 +157,19 @@ be scrolled on either direction based on length of
 the previous search results */
 class _Preview_page extends State<Preview_page> {
   /** Temporary styles using here for now, can be moved somewhere else later */
-  titles() => const TextStyle(
-      fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white);
-  info() => const TextStyle(fontSize: 14, color: Colors.white);
+  titles() => const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white);
+  info() => const TextStyle(fontSize: 14, color: Colors.red);
+
+  List<bool> individualButtons = List.filled(dummy_data.length, false);
+
+  /** This is a callback function thats sent to the buttons to 
+   * reflect a change in the array
+   */
+  void changeMainArray(bool changeBool, int index) {
+    setState(() {
+      individualButtons[index] = changeBool;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -160,7 +179,8 @@ class _Preview_page extends State<Preview_page> {
 
     return Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.black,
+          automaticallyImplyLeading: false,
+          backgroundColor: Colors.black.withOpacity(0.90),
         ),
         backgroundColor: Color.fromRGBO(0, 0, 0, 0.0),
         /** We want to have cards that can be scrolled horizontally 
@@ -174,8 +194,7 @@ class _Preview_page extends State<Preview_page> {
                 height: height,
                 width: width,
                 child: Card(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     color: Colors.grey[850],
                     child: ListView(
                       scrollDirection: Axis.vertical,
@@ -187,9 +206,10 @@ class _Preview_page extends State<Preview_page> {
                           child: Align(
                               alignment: Alignment.topRight,
                               child: IconButton(
-                                  onPressed: () {},
-                                  icon: Icon(Icons.cancel,
-                                      color: Colors.grey[400]))),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  icon: Icon(Icons.cancel, color: Colors.grey[400]))),
                         ),
                         /* The main image for the book*/
                         Align(
@@ -199,8 +219,7 @@ class _Preview_page extends State<Preview_page> {
                                 color: Colors.white,
                                 offset: const Offset(5, 5),
                                 sigma: 10,
-                                child: Image.network(dummy_data[index]["image"],
-                                    width: 250, height: 500))),
+                                child: Image.network(dummy_data[index]["image"], width: 250, height: 450))),
                         /*Any further  information regarding the author*/
                         Column(
                           children: [
@@ -210,14 +229,19 @@ class _Preview_page extends State<Preview_page> {
                               dummy_data[index]["author"],
                               style: info(),
                             ),
-                            Container(height: 55),
+                            Container(height: 25),
 
                             /* Container responsible for the elevated button*/
                             Container(
                                 padding: const EdgeInsets.only(bottom: 30),
                                 width: width - 30,
                                 height: 80,
-                                child: Library_button(index: index)),
+                                child: Library_button(
+                                  index: index,
+                                  libraryCallback: changeMainArray,
+                                  buttonStates: individualButtons,
+                                )),
+                            Container(height: 50)
                           ],
                         ),
                       ],
@@ -233,12 +257,7 @@ Future<bool> doesFileExist(int index) async {
   String dest = destinationDirectory.path;
 
   String extension = "." + dummy_data[index]["file"].split(".").last;
-  String fullPath = dest +
-      "/" +
-      dummy_data[index]["title"] +
-      "_" +
-      dummy_data[index]["author"] +
-      extension; //file to be located is formed
+  String fullPath = dest + "/" + dummy_data[index]["title"] + "_" + dummy_data[index]["author"] + extension; //file to be located is formed
 
   /** Check if this file currently exists in the local storage */
   if (await File(fullPath).exists()) {
