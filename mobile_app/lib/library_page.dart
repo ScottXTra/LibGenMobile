@@ -19,7 +19,9 @@ class _library_pageState extends State<library_page> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[900],
       appBar: AppBar(
+        backgroundColor: Colors.grey[850],
         title: const Text(
           "Library",
         ),
@@ -85,15 +87,16 @@ class _BooksGridViewState extends State<BooksGridView> {
     });
     return GridView.count(
       crossAxisCount: 2,
+      mainAxisSpacing: 20,
       children: [
         for (int i = 0; i < books.length; i++)
-          SingleBookGridView(
-              books[i]['image'], books[i]['title'] + "_" + books[i]['author'])
+          SingleBookGridView(books[i]['image'],
+              books[i]['title'] + "_" + books[i]['author'], books[i]['title'])
       ],
     );
   }
 
-  Widget SingleBookGridView(String imageUrl, String bookPath) {
+  Widget SingleBookGridView(String imageUrl, String bookPath, String title) {
     return GestureDetector(
       onTap: () async {
         Directory doucmentsDir = await getApplicationDocumentsDirectory();
@@ -128,7 +131,7 @@ class _BooksGridViewState extends State<BooksGridView> {
               ),
             ),
           ),
-          Text("New"),
+          Text(title, style: TextStyle(color: Colors.white)),
         ],
       ),
     );
@@ -188,26 +191,40 @@ class _BooksListViewState extends State<BooksListView> {
       child: Container(
         height: MediaQuery.of(context).size.height / 5,
         child: Card(
+          color: Colors.grey[800],
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
+            // mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.network(
                 url,
                 fit: BoxFit.fill,
                 alignment: Alignment.centerLeft,
               ),
+              const Spacer(),
               Container(
                 alignment: Alignment.center,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title),
-                    Text(author),
-                    Text("new"),
+                    Text(
+                      title,
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                      ),
+                    ),
+                    Text(
+                      author,
+                      textAlign: TextAlign.left,
+                      style: TextStyle(color: Colors.red),
+                    ),
                   ],
                 ),
               ),
+              const Spacer(),
             ],
           ),
         ),
@@ -240,15 +257,19 @@ class _sortAndListState extends State<sortAndList> {
         Expanded(
           child: Row(
             children: [
-              Padding(padding: EdgeInsets.only(left: 25)),
-              Text("Sort"),
+              Padding(padding: EdgeInsets.only(left: 30)),
+              Text("Sort", style: TextStyle(color: Colors.white)),
               Padding(padding: EdgeInsets.only(left: 5)),
               DropdownButton(
+                dropdownColor: Colors.grey[850],
+                underline: Container(
+                  color: Colors.white,
+                ),
                 items: <String>['Recent', 'Title', 'Author']
                     .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
-                    child: Text(value),
+                    child: Text(value, style: TextStyle(color: Colors.white)),
                   );
                 }).toList(),
                 onChanged: (String? newValue) {
@@ -268,6 +289,7 @@ class _sortAndListState extends State<sortAndList> {
           child: IconButton(
             icon: Icon(
               Icons.list,
+              color: Colors.white,
             ),
             onPressed: () {
               setState(() {

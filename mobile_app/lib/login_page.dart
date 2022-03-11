@@ -8,6 +8,7 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[900],
       body: SafeArea(
         child: Column(
           children: [
@@ -26,7 +27,7 @@ class LoginPage extends StatelessWidget {
               child: FittedBox(
                 fit: BoxFit.fitHeight,
                 child: Text("Welcome to WeBooks",
-                    style: TextStyle(fontSize: 38.0)),
+                    style: TextStyle(fontSize: 38.0, color: Colors.white)),
               ),
             ),
             Container(
