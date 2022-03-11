@@ -1,7 +1,18 @@
 import 'dart:ui';
+import 'dart:async';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:loginscreen/library_page.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:simple_shadow/simple_shadow.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:open_file/open_file.dart';
+import 'package:epub_viewer/epub_viewer.dart';
+
+// grey out the button when its already in the directory they are trying to reach
+// need to account for epub files when the button is then changed to "open here"
 
 /** 
  * DUMMY DATA : List Dummy_data
@@ -9,21 +20,55 @@ import 'package:simple_shadow/simple_shadow.dart';
  */
 List dummy_data = [
   {
+    "image": "https://images-na.ssl-images-amazon.com/images/I/918s2eM4pSL.jpg",
+    "author": "Rick Riordan",
+    "title": "The Last Olympian",
+    "file":
+        "http://31.42.184.140/main/480000/cdd04c59e2f8e0f34488ca3dc4278ede/%28Percy%20Jackson%20and%20the%20Olympians%205%29%20Rick%20Riordan%20-%20The%20Last%20Olympian%20%28Percy%20Jackson%20%26%20the%20Olympians%2C%20Book%205%29-Disney%20Hyperion%20Books%20for%20Children%20%282009%29.pdf"
+  },
+  {
     "image": "https://images-na.ssl-images-amazon.com/images/I/91RQ5d-eIqL.jpg",
     "author": "Rick Riordan",
     "title": "The Lightning Thief",
+    "file":
+        "http://31.42.184.140/main/737000/3cf9de57b22129d085748d6169787b0e/Rick%20Riordan%20-%20The%20Lightning%20Thief%20%28Percy%20Jackson%20and%20the%20Olympians%2C%20Book%201%29%20%20-Disney-Hyperion%20%282005%29.epub"
   },
   {
     "image": "https://images-na.ssl-images-amazon.com/images/I/9117OFw0G4L.jpg",
     "author": "Rick Riordan",
     "title": "The Sea of Monsters",
-  },
-  {
-    "image": "https://images-na.ssl-images-amazon.com/images/I/918s2eM4pSL.jpg",
-    "author": "Rick Riordan",
-    "title": "The Last Olympian",
+    "file":
+        "http://31.42.184.140/main/773000/cc8bdd3cf019c5267d33c9eb68ac56a2/%28Percy%20Jackson%20%26%20the%20Olympians%202%29%20Rick%20Riordan%20-%20The%20Sea%20of%20Monsters%20%20-Disney-Hyperion%20%282006%29.epub"
   },
 ];
+
+/** These functions correlate to the async for accessing the phones local storage */
+Future<String> downloadFile(String url, String fileName, String dir) async {
+  HttpClient httpClient = new HttpClient();
+  File file;
+  String filePath = '';
+  String myUrl = '';
+
+  /** This will actually already create the link with directory seperations, 
+     * so no need to pass that in the parameters 
+     */
+  try {
+    myUrl = url + '/' + fileName;
+    var request = await httpClient.getUrl(Uri.parse(myUrl));
+    var response = await request.close();
+    if (response.statusCode == 200) {
+      var bytes = await consolidateHttpClientResponseBytes(response);
+      filePath = '$dir/$fileName';
+      file = File(filePath);
+      await file.writeAsBytes(bytes);
+    } else
+      filePath = 'Error code: ' + response.statusCode.toString();
+  } catch (ex) {
+    filePath = 'Can not fetch url';
+  }
+
+  return filePath;
+}
 
 /** 
 Page Author: Maaz Syed
@@ -31,6 +76,66 @@ Page Author: Maaz Syed
 class Preview_page extends StatefulWidget {
   @override
   State<Preview_page> createState() => _Preview_page();
+}
+
+class Library_button extends StatefulWidget {
+  final int index;
+  Library_button({required this.index});
+
+  @override
+  State<Library_button> createState() => _Library_button();
+}
+
+/** Each button will have its own state here */
+class _Library_button extends State<Library_button> {
+  bool blockButton = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all<Color>(Colors.black),
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)))),
+      onPressed: () async {
+        /** Check first if the file we are working with already exists */
+        bool doesFileExixt = await doesFileExist(widget.index);
+
+        String downloadLink = dummy_data[widget.index]["file"];
+        String extension = "." + dummy_data[widget.index]["file"].split(".").last;
+        String fullFileName = dummy_data[widget.index]["title"] + "_" + dummy_data[widget.index]["author"] + extension;
+        Directory destinationDirect = await getApplicationDocumentsDirectory();
+        String stringDestinationDirect = destinationDirect.path;
+
+        if (doesFileExixt == false) {
+          /** downloadlink : represents link to download the pdf, extension: the extension of the file, 
+                                   * destinationDirect : the path to store into the local storage
+                                   */
+          await downloadFile(downloadLink, fullFileName, stringDestinationDirect);
+        } else {
+          /*Since the file already exists here update the state */
+          setState(() {
+            blockButton = true;
+          });
+
+          /*For viewing we want to view it a differnent way for epubs */
+          String openFile = stringDestinationDirect + "/" + fullFileName;
+          if (extension == ".pdf") {
+            await OpenFile.open(openFile);
+          } else {
+            EpubViewer.setConfig(
+              themeColor: Theme.of(context).primaryColor,
+              identifier: "iosbook",
+              scrollDirection: EpubScrollDirection.VERTICAL,
+              allowSharing: true,
+              enableTts: true,
+            );
+            EpubViewer.open(openFile);
+          }
+        }
+      },
+      child: blockButton ? Text("View File") : Text("Add to library"),
+    );
+  }
 }
 
 /*This class will generate horizontal cards that can 
@@ -98,18 +203,10 @@ class _Preview_page extends State<Preview_page> {
 
                             /* Container responsible for the elevated button*/
                             Container(
-                              padding: const EdgeInsets.only(bottom: 30),
-                              width: width - 30,
-                              height: 80,
-                              child: ElevatedButton(
-                                style: ButtonStyle(
-                                    backgroundColor: MaterialStateProperty.all<Color>(Colors.black),
-                                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                                        RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)))),
-                                onPressed: () {},
-                                child: Text("ADD TO LIBRARY"),
-                              ),
-                            ),
+                                padding: const EdgeInsets.only(bottom: 30),
+                                width: width - 30,
+                                height: 80,
+                                child: Library_button(index: index)),
                           ],
                         ),
                       ],
@@ -118,3 +215,23 @@ class _Preview_page extends State<Preview_page> {
             }));
   }
 }
+
+/*Function returns the full path to the file, and where its located within the local storage */
+Future<bool> doesFileExist(int index) async {
+  Directory destinationDirectory = await (getApplicationDocumentsDirectory());
+  String dest = destinationDirectory.path;
+
+  String extension = "." + dummy_data[index]["file"].split(".").last;
+  String fullPath = dest + "/" + dummy_data[index]["title"] + "_" + dummy_data[index]["author"] + extension; //file to be located is formed
+
+  /** Check if this file currently exists in the local storage */
+  if (await File(fullPath).exists()) {
+    return true;
+  }
+
+  return false;
+}
+
+/**This function checks based on the extension we are dealing with 
+ * default case : .pdf else will be for any other extensin ( in our case .epub)
+ */
