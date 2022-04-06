@@ -23,8 +23,8 @@ import 'dart:developer';
 List dummy_data = [
   {
     "image": "https://images-na.ssl-images-amazon.com/images/I/918s2eM4pSL.jpg",
-    "author": "teripandi",
-    "title": "testTitle5",
+    "author": "Rick Riordan",
+    "title": "The Lightning Thief",
     "file":
         "http://31.42.184.140/main/179000/20579ec320376304a862de45717badd1/%20-%20Cooking%20-%20Diabetic%20or%20Low-Sugar%20Recipes%20-%20eBook.pdf"
   },
@@ -62,7 +62,7 @@ Future<String> downloadFile(String url, String fileName, String dir) async {
      * so no need to pass that in the parameters 
      */
   try {
-    myUrl = url + '/' + fileName;
+    myUrl = url;
     var request = await httpClient.getUrl(Uri.parse(myUrl));
     var response = await request.close();
     if (response.statusCode == 200) {
@@ -91,7 +91,10 @@ class Library_button extends StatefulWidget {
   final int index;
   final Function libraryCallback;
   final List<bool> buttonStates;
-  Library_button({required this.index, required this.libraryCallback, required this.buttonStates});
+  Library_button(
+      {required this.index,
+      required this.libraryCallback,
+      required this.buttonStates});
 
   @override
   State<Library_button> createState() => _Library_button();
@@ -111,16 +114,22 @@ class _Library_button extends State<Library_button> {
   Widget build(BuildContext context) {
     return ElevatedButton(
       style: ButtonStyle(
-          backgroundColor:
-              blockButton ? MaterialStateProperty.all(Colors.grey[700]) : MaterialStateProperty.all(Colors.black.withOpacity(0.3)),
-          shape: MaterialStateProperty.all<RoundedRectangleBorder>(RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)))),
+          backgroundColor: blockButton
+              ? MaterialStateProperty.all(Colors.grey[700])
+              : MaterialStateProperty.all(Colors.black.withOpacity(0.3)),
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)))),
       onPressed: () async {
         /** Check first if the file we are working with already exists */
         bool doesFileExixt = await doesFileExist(widget.index);
 
         String downloadLink = dummy_data[widget.index]["file"];
-        String extension = "." + dummy_data[widget.index]["file"].split(".").last;
-        String fullFileName = dummy_data[widget.index]["title"] + "_" + dummy_data[widget.index]["author"] + extension;
+        String extension =
+            "." + dummy_data[widget.index]["file"].split(".").last;
+        String fullFileName = dummy_data[widget.index]["title"] +
+            "_" +
+            dummy_data[widget.index]["author"] +
+            extension;
         Directory destinationDirect = await getApplicationDocumentsDirectory();
         String stringDestinationDirect = destinationDirect.path;
 
@@ -128,18 +137,20 @@ class _Library_button extends State<Library_button> {
           /** downloadlink : represents link to download the pdf, extension: the extension of the file, 
                                    * destinationDirect : the path to store into the local storage
                                    */
-          await downloadFile(downloadLink, fullFileName, stringDestinationDirect);
+          await downloadFile(
+              downloadLink, fullFileName, stringDestinationDirect);
 
           Map<String, dynamic> singleMap = {
             "title": dummy_data[widget.index]["title"],
             "author": dummy_data[widget.index]["author"],
             "image": dummy_data[widget.index]["image"],
-            "file": fullFileName,
+            "file": stringDestinationDirect + '/' + fullFileName,
             "recent": DateTime.now().toUtc().millisecondsSinceEpoch
           };
 
           /**If json exists overwrite by getting data from the file otherwise create the file and initial data */
-          if (await File(stringDestinationDirect + "/" + "local_storage.json").exists()) {
+          if (await File(stringDestinationDirect + "/" + "local_storage.json")
+              .exists()) {
             writeToFile(singleMap, stringDestinationDirect);
           } else {
             createFile(singleMap, stringDestinationDirect);
@@ -180,7 +191,8 @@ be scrolled on either direction based on length of
 the previous search results */
 class _Preview_page extends State<Preview_page> {
   /** Temporary styles using here for now, can be moved somewhere else later */
-  titles() => const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white);
+  titles() => const TextStyle(
+      fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white);
   info() => const TextStyle(fontSize: 14, color: Colors.red);
 
   List<bool> individualButtons = List.filled(dummy_data.length, false);
@@ -217,7 +229,8 @@ class _Preview_page extends State<Preview_page> {
                 height: height,
                 width: width,
                 child: Card(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                     color: Colors.grey[850],
                     child: ListView(
                       scrollDirection: Axis.vertical,
@@ -232,7 +245,8 @@ class _Preview_page extends State<Preview_page> {
                                   onPressed: () {
                                     Navigator.pop(context);
                                   },
-                                  icon: Icon(Icons.cancel, color: Colors.grey[400]))),
+                                  icon: Icon(Icons.cancel,
+                                      color: Colors.grey[400]))),
                         ),
                         /* The main image for the book*/
                         Align(
@@ -242,7 +256,8 @@ class _Preview_page extends State<Preview_page> {
                                 color: Colors.white,
                                 offset: const Offset(5, 5),
                                 sigma: 10,
-                                child: Image.network(dummy_data[index]["image"], width: 250, height: 450))),
+                                child: Image.network(dummy_data[index]["image"],
+                                    width: 250, height: 450))),
                         /*Any further  information regarding the author*/
                         Column(
                           children: [
@@ -280,7 +295,12 @@ Future<bool> doesFileExist(int index) async {
   String dest = destinationDirectory.path;
 
   String extension = "." + dummy_data[index]["file"].split(".").last;
-  String fullPath = dest + "/" + dummy_data[index]["title"] + "_" + dummy_data[index]["author"] + extension; //file to be located is formed
+  String fullPath = dest +
+      "/" +
+      dummy_data[index]["title"] +
+      "_" +
+      dummy_data[index]["author"] +
+      extension; //file to be located is formed
 
   /** Check if this file currently exists in the local storage */
   if (await File(fullPath).exists()) {
@@ -296,7 +316,8 @@ void createFile(Map<String, dynamic> element, String directory) {
   File jsonFile = new File(directory + "/" + "local_storage.json");
   jsonFile.createSync(); //for some null protection
   content.add(element);
-  jsonFile.writeAsStringSync(jsonEncode(content)); //writes to the file synchronously and overwrites the data
+  jsonFile.writeAsStringSync(jsonEncode(
+      content)); //writes to the file synchronously and overwrites the data
 }
 
 void writeToFile(Map<String, dynamic> element, String directory) {
