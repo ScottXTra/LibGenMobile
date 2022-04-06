@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'attractions.dart';
 import 'package:open_file/open_file.dart';
@@ -68,6 +70,27 @@ class _library_pageState extends State<library_page> {
   }
 }
 
+Future<List> getBooks(String method) async {
+  List books = [] as List<dynamic>;
+  Directory doucmentsDir = await getApplicationDocumentsDirectory();
+  String doucmentsPath = doucmentsDir.path;
+  if (!await File('$doucmentsPath/local_storage.json').exists()) {
+    final file = File('$doucmentsPath/local_storage.json');
+    return books;
+  }
+
+  final file = File('$doucmentsPath/local_storage.json');
+  final contents = await json.decode(await file.readAsString());
+
+  for (int i = 0; i < contents.length; i++) {
+    books.add(contents[i]);
+  }
+  books.sort((a, b) {
+    return a[method.toLowerCase()].compareTo(b[method.toLowerCase()]);
+  });
+  return books;
+}
+
 class BooksGridView extends StatefulWidget {
   final String sortingMethod;
   const BooksGridView({Key? key, this.sortingMethod = ""}) : super(key: key);
@@ -79,35 +102,31 @@ class BooksGridView extends StatefulWidget {
 class _BooksGridViewState extends State<BooksGridView> {
   @override
   Widget build(BuildContext context) {
-    List books = dummy_data;
-
-    books.sort((a, b) {
-      return a[widget.sortingMethod.toLowerCase()]
-          .compareTo(b[widget.sortingMethod.toLowerCase()]);
-    });
-    return GridView.count(
-      crossAxisCount: 2,
-      mainAxisSpacing: 20,
-      children: [
-        for (int i = 0; i < books.length; i++)
-          SingleBookGridView(books[i]['image'],
-              books[i]['title'] + "_" + books[i]['author'], books[i]['title'])
-      ],
-    );
+    return FutureBuilder<List>(
+        future: getBooks(widget.sortingMethod),
+        initialData: [],
+        builder: (BuildContext context, AsyncSnapshot<List> books) {
+          return GridView.count(
+            crossAxisCount: 2,
+            mainAxisSpacing: 20,
+            children: [
+              for (int i = 0; i < books.data!.length; i++)
+                SingleBookGridView(books.data![i]['image'],
+                    books.data![i]['file'], books.data![i]['title'])
+            ],
+          );
+        });
   }
 
   Widget SingleBookGridView(String imageUrl, String bookPath, String title) {
     return GestureDetector(
-      onTap: () async {
-        Directory doucmentsDir = await getApplicationDocumentsDirectory();
-        String doucmentsPath = doucmentsDir.path;
-
-        String fullBookPath = doucmentsPath + '/' + bookPath;
-
-        if (await File(fullBookPath + ".pdf").exists()) {
+      onTap: () {
+        String extension = p.extension(bookPath);
+        print(bookPath);
+        if (extension == ".pdf") {
           //for opening pdf
-          OpenFile.open(fullBookPath + ".pdf");
-        } else if (await File(fullBookPath + ".epub").exists()) {
+          OpenFile.open(bookPath);
+        } else if (extension == ".epub") {
           //for opening epub
           EpubViewer.setConfig(
             themeColor: Theme.of(context).primaryColor,
@@ -116,9 +135,8 @@ class _BooksGridViewState extends State<BooksGridView> {
             allowSharing: true,
             enableTts: true,
           );
-          EpubViewer.open(fullBookPath + ".epub");
+          EpubViewer.open(bookPath);
         }
-
         // for opening pdf
       },
       child: Column(
@@ -148,33 +166,33 @@ class BooksListView extends StatefulWidget {
 class _BooksListViewState extends State<BooksListView> {
   @override
   Widget build(BuildContext context) {
-    List books = dummy_data;
-    books.sort((a, b) {
-      return a[widget.sortingMethod.toLowerCase()]
-          .compareTo(b[widget.sortingMethod.toLowerCase()]);
-    });
-    return ListView(
-      children: [
-        for (int i = 0; i < books.length; i++)
-          SingleBookListView(books[i]['image'], books[i]['author'],
-              books[i]['title'], books[i]['title'] + "_" + books[i]['author'])
-      ],
-    );
+    return FutureBuilder<List>(
+        future: getBooks(widget.sortingMethod),
+        initialData: [],
+        builder: (BuildContext context, AsyncSnapshot<List> books) {
+          return ListView(
+            children: [
+              for (int i = 0; i < books.data!.length; i++)
+                SingleBookListView(
+                    books.data![i]['image'],
+                    books.data![i]['author'],
+                    books.data![i]['title'],
+                    books.data![i]['file'])
+            ],
+          );
+        });
   }
 
   Widget SingleBookListView(
       String url, String author, String title, String bookPath) {
     return GestureDetector(
       onTap: () async {
-        Directory doucmentsDir = await getApplicationDocumentsDirectory();
-        String doucmentsPath = doucmentsDir.path;
+        String extension = p.extension(bookPath);
 
-        String fullBookPath = doucmentsPath + '/' + bookPath;
-
-        if (await File(fullBookPath + ".pdf").exists()) {
+        if (extension == ".pdf") {
           //for opening pdf
-          OpenFile.open(fullBookPath + ".pdf");
-        } else if (await File(fullBookPath + ".epub").exists()) {
+          OpenFile.open(bookPath);
+        } else if (extension == ".epub") {
           //for opening epub
           EpubViewer.setConfig(
             themeColor: Theme.of(context).primaryColor,
@@ -183,10 +201,8 @@ class _BooksListViewState extends State<BooksListView> {
             allowSharing: true,
             enableTts: true,
           );
-          EpubViewer.open(fullBookPath + ".epub");
+          EpubViewer.open(bookPath);
         }
-
-        // for opening pdf
       },
       child: Container(
         height: MediaQuery.of(context).size.height / 5,
