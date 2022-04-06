@@ -19,7 +19,9 @@ class _library_pageState extends State<library_page> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[900],
       appBar: AppBar(
+        backgroundColor: Colors.grey[850],
         title: const Text(
           "Library",
         ),
@@ -66,6 +68,25 @@ class _library_pageState extends State<library_page> {
   }
 }
 
+Future<List> getBooks(String method) async {
+  List books = [] as List<dynamic>;
+  Directory doucmentsDir = await getApplicationDocumentsDirectory();
+  String doucmentsPath = doucmentsDir.path;
+  //TODO: update this to be reading the file at this directory
+  books.sort((a, b) {
+    return a[method.toLowerCase()].compareTo(b[method.toLowerCase()]);
+  });
+  books.add({
+    "title": "test",
+    "author": "test",
+    "image": "https://images-na.ssl-images-amazon.com/images/I/91RQ5d-eIqL.jpg",
+    "filename":
+        "http://31.42.184.140/main/737000/3cf9de57b22129d085748d6169787b0e/Rick%20Riordan%20-%20The%20Lightning%20Thief%20%28Percy%20Jackson%20and%20the%20Olympians%2C%20Book%201%29%20%20-Disney-Hyperion%20%282005%29.epub",
+    "timedownloaded": 1234
+  });
+  return books;
+}
+
 class BooksGridView extends StatefulWidget {
   final String sortingMethod;
   const BooksGridView({Key? key, this.sortingMethod = ""}) : super(key: key);
@@ -77,23 +98,31 @@ class BooksGridView extends StatefulWidget {
 class _BooksGridViewState extends State<BooksGridView> {
   @override
   Widget build(BuildContext context) {
-    List books = dummy_data;
-
-    books.sort((a, b) {
-      return a[widget.sortingMethod.toLowerCase()]
-          .compareTo(b[widget.sortingMethod.toLowerCase()]);
-    });
-    return GridView.count(
-      crossAxisCount: 2,
-      children: [
-        for (int i = 0; i < books.length; i++)
-          SingleBookGridView(
-              books[i]['image'], books[i]['title'] + "_" + books[i]['author'])
-      ],
-    );
+    return FutureBuilder<List>(
+        future: getBooks(widget.sortingMethod),
+        initialData: [],
+        builder: (BuildContext context, AsyncSnapshot<List> books) {
+          if (books.data?.length == 0)
+            return Center(
+                child: Text(
+              "Empty Library",
+              style: TextStyle(color: Colors.white, fontSize: 35),
+            ));
+          return GridView.count(
+            crossAxisCount: 2,
+            mainAxisSpacing: 20,
+            children: [
+              for (int i = 0; i < books.data!.length; i++)
+                SingleBookGridView(
+                    books.data![i]['image'],
+                    books.data![i]['title'] + "_" + books.data![i]['author'],
+                    books.data![i]['title'])
+            ],
+          );
+        });
   }
 
-  Widget SingleBookGridView(String imageUrl, String bookPath) {
+  Widget SingleBookGridView(String imageUrl, String bookPath, String title) {
     return GestureDetector(
       onTap: () async {
         Directory doucmentsDir = await getApplicationDocumentsDirectory();
@@ -128,7 +157,7 @@ class _BooksGridViewState extends State<BooksGridView> {
               ),
             ),
           ),
-          Text("New"),
+          Text(title, style: TextStyle(color: Colors.white)),
         ],
       ),
     );
@@ -145,18 +174,22 @@ class BooksListView extends StatefulWidget {
 class _BooksListViewState extends State<BooksListView> {
   @override
   Widget build(BuildContext context) {
-    List books = dummy_data;
-    books.sort((a, b) {
-      return a[widget.sortingMethod.toLowerCase()]
-          .compareTo(b[widget.sortingMethod.toLowerCase()]);
-    });
-    return ListView(
-      children: [
-        for (int i = 0; i < books.length; i++)
-          SingleBookListView(books[i]['image'], books[i]['author'],
-              books[i]['title'], books[i]['title'] + "_" + books[i]['author'])
-      ],
-    );
+    // List books = dummy_data;
+    // List books = getBooks(widget.sortingMethod);
+
+    // if (books.isEmpty)
+    return Center(
+        child: Text(
+      "Empty Library",
+      style: TextStyle(color: Colors.white, fontSize: 35),
+    ));
+    // return ListView(
+    //   children: [
+    //     for (int i = 0; i < books.length; i++)
+    //       SingleBookListView(books[i]['image'], books[i]['author'],
+    //           books[i]['title'], books[i]['title'] + "_" + books[i]['author'])
+    //   ],
+    // );
   }
 
   Widget SingleBookListView(
@@ -188,26 +221,40 @@ class _BooksListViewState extends State<BooksListView> {
       child: Container(
         height: MediaQuery.of(context).size.height / 5,
         child: Card(
+          color: Colors.grey[800],
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
+            // mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.network(
                 url,
                 fit: BoxFit.fill,
                 alignment: Alignment.centerLeft,
               ),
+              const Spacer(),
               Container(
                 alignment: Alignment.center,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title),
-                    Text(author),
-                    Text("new"),
+                    Text(
+                      title,
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                      ),
+                    ),
+                    Text(
+                      author,
+                      textAlign: TextAlign.left,
+                      style: TextStyle(color: Colors.red),
+                    ),
                   ],
                 ),
               ),
+              const Spacer(),
             ],
           ),
         ),
@@ -240,15 +287,19 @@ class _sortAndListState extends State<sortAndList> {
         Expanded(
           child: Row(
             children: [
-              Padding(padding: EdgeInsets.only(left: 25)),
-              Text("Sort"),
+              Padding(padding: EdgeInsets.only(left: 30)),
+              Text("Sort", style: TextStyle(color: Colors.white)),
               Padding(padding: EdgeInsets.only(left: 5)),
               DropdownButton(
+                dropdownColor: Colors.grey[850],
+                underline: Container(
+                  color: Colors.white,
+                ),
                 items: <String>['Recent', 'Title', 'Author']
                     .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
-                    child: Text(value),
+                    child: Text(value, style: TextStyle(color: Colors.white)),
                   );
                 }).toList(),
                 onChanged: (String? newValue) {
@@ -268,6 +319,7 @@ class _sortAndListState extends State<sortAndList> {
           child: IconButton(
             icon: Icon(
               Icons.list,
+              color: Colors.white,
             ),
             onPressed: () {
               setState(() {
