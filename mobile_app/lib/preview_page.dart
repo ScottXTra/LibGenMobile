@@ -10,6 +10,8 @@ import 'package:simple_shadow/simple_shadow.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:open_file/open_file.dart';
 import 'package:epub_viewer/epub_viewer.dart';
+import 'dart:convert';
+import 'dart:developer';
 
 // grey out the button when its already in the directory they are trying to reach
 // need to account for epub files when the button is then changed to "open here"
@@ -19,6 +21,13 @@ import 'package:epub_viewer/epub_viewer.dart';
  * 
  */
 List dummy_data = [
+  {
+    "image": "https://images-na.ssl-images-amazon.com/images/I/918s2eM4pSL.jpg",
+    "author": "teripandi",
+    "title": "testTitle5",
+    "file":
+        "http://31.42.184.140/main/179000/20579ec320376304a862de45717badd1/%20-%20Cooking%20-%20Diabetic%20or%20Low-Sugar%20Recipes%20-%20eBook.pdf"
+  },
   {
     "image": "https://images-na.ssl-images-amazon.com/images/I/918s2eM4pSL.jpg",
     "author": "Rick Riordan",
@@ -120,6 +129,21 @@ class _Library_button extends State<Library_button> {
                                    * destinationDirect : the path to store into the local storage
                                    */
           await downloadFile(downloadLink, fullFileName, stringDestinationDirect);
+
+          Map<String, dynamic> singleMap = {
+            "title": dummy_data[widget.index]["title"],
+            "author": dummy_data[widget.index]["author"],
+            "image": dummy_data[widget.index]["image"],
+            "file": fullFileName,
+            "recent": DateTime.now().toUtc().millisecondsSinceEpoch
+          };
+
+          /**If json exists overwrite by getting data from the file otherwise create the file and initial data */
+          if (await File(stringDestinationDirect + "/" + "local_storage.json").exists()) {
+            writeToFile(singleMap, stringDestinationDirect);
+          } else {
+            createFile(singleMap, stringDestinationDirect);
+          }
         } else {
           /*Since the file already exists here update the state */
           /*For viewing we want to view it a differnent way for epubs */
@@ -266,6 +290,22 @@ Future<bool> doesFileExist(int index) async {
   return false;
 }
 
-/**This function checks based on the extension we are dealing with 
- * default case : .pdf else will be for any other extensin ( in our case .epub)
- */
+/** Following functions involve functions that allow you to write to a json file */
+void createFile(Map<String, dynamic> element, String directory) {
+  List<dynamic> content = [];
+  File jsonFile = new File(directory + "/" + "local_storage.json");
+  jsonFile.createSync(); //for some null protection
+  content.add(element);
+  jsonFile.writeAsStringSync(jsonEncode(content)); //writes to the file synchronously and overwrites the data
+}
+
+void writeToFile(Map<String, dynamic> element, String directory) {
+  File jsonFile = File(directory + "/" + "local_storage.json");
+
+  /** Before we write to the file we need to see what we currently have in it */
+  List<dynamic> jsonFileContent = jsonDecode(jsonFile.readAsStringSync());
+  jsonFileContent.add(element);
+
+  /** This is what we are essentially appening and overwriting with */
+  jsonFile.writeAsStringSync(jsonEncode(jsonFileContent));
+}
