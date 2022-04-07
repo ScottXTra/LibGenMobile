@@ -95,87 +95,111 @@ class Library_button extends StatefulWidget {
 
 /** Each button will have its own state here */
 class _Library_button extends State<Library_button> {
-  bool blockButton = false;
+  bool doesFileExixt = false;
+  bool downloading = false;
 
   @override
   void initState() {
     super.initState();
-    blockButton = widget.buttonStates[widget.index];
+    // blockButton = widget.buttonStates[widget.index];
   }
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      style: ButtonStyle(
-          backgroundColor: blockButton
-              ? MaterialStateProperty.all(Colors.grey[700])
-              : MaterialStateProperty.all(Colors.black.withOpacity(0.3)),
-          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)))),
-      onPressed: () async {
-        /** Check first if the file we are working with already exists */
-        bool doesFileExixt = await doesFileExist(widget.index);
+    return FutureBuilder(
+        future: doesFileExist(widget.index),
+        builder: (context, data) {
+          if (!data.hasData ||
+              data.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator();
+          }
+          doesFileExixt = data.data as bool;
+          if (downloading && !doesFileExixt) {
+            WidgetsBinding.instance?.addPostFrameCallback((_) => setState(() {
+                  if (downloading && doesFileExixt) downloading = false;
+                }));
+            return CircularProgressIndicator();
+          }
+          if (doesFileExixt && downloading) {
+            downloading = false;
+          }
+          return ElevatedButton(
+            style: ButtonStyle(
+                backgroundColor: doesFileExixt
+                    ? MaterialStateProperty.all(Colors.grey[700])
+                    : MaterialStateProperty.all(Colors.black.withOpacity(0.3)),
+                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)))),
+            onPressed: () async {
+              /** Check first if the file we are working with already exists */
+              // bool doesFileExixt = await doesFileExist(widget.index);
 
-        String downloadLink = dummy_data[widget.index]["file"];
-        String extension =
-            "." + dummy_data[widget.index]["file"].split(".").last;
-        String fullFileName = dummy_data[widget.index]["title"] +
-            "_" +
-            dummy_data[widget.index]["author"] +
-            extension;
-        Directory destinationDirect = await getApplicationDocumentsDirectory();
-        String stringDestinationDirect = destinationDirect.path;
+              String downloadLink = dummy_data[widget.index]["file"];
+              String extension =
+                  "." + dummy_data[widget.index]["file"].split(".").last;
+              String fullFileName = dummy_data[widget.index]["title"] +
+                  "_" +
+                  dummy_data[widget.index]["author"] +
+                  extension;
+              Directory destinationDirect =
+                  await getApplicationDocumentsDirectory();
+              String stringDestinationDirect = destinationDirect.path;
 
-        if (doesFileExixt == false) {
-          /** downloadlink : represents link to download the pdf, extension: the extension of the file, 
+              if (doesFileExixt == false) {
+                /** downloadlink : represents link to download the pdf, extension: the extension of the file, 
                                    * destinationDirect : the path to store into the local storage
                                    */
-          await downloadFile(
-              downloadLink, fullFileName, stringDestinationDirect);
+                downloadFile(
+                    downloadLink, fullFileName, stringDestinationDirect);
 
-          Map<String, dynamic> singleMap = {
-            "title": dummy_data[widget.index]["title"],
-            "author": dummy_data[widget.index]["author"],
-            "image": dummy_data[widget.index]["image"],
-            "file": fullFileName,
-            "recent": DateTime.now().toUtc().millisecondsSinceEpoch
-          };
+                Map<String, dynamic> singleMap = {
+                  "title": dummy_data[widget.index]["title"],
+                  "author": dummy_data[widget.index]["author"],
+                  "image": dummy_data[widget.index]["image"],
+                  "file": fullFileName,
+                  "recent": DateTime.now().toUtc().millisecondsSinceEpoch
+                };
 
-          /**If json exists overwrite by getting data from the file otherwise create the file and initial data */
-          if (await File(stringDestinationDirect + "/" + "local_storage.json")
-              .exists()) {
-            writeToFile(singleMap, stringDestinationDirect);
-          } else {
-            createFile(singleMap, stringDestinationDirect);
-          }
-        } else {
-          /*Since the file already exists here update the state */
-          /*For viewing we want to view it a differnent way for epubs */
-          String openFile = stringDestinationDirect + "/" + fullFileName;
-          if (extension == ".pdf") {
-            await OpenFile.open(openFile);
-          } else {
-            EpubViewer.setConfig(
-              themeColor: Theme.of(context).primaryColor,
-              identifier: "iosbook",
-              scrollDirection: EpubScrollDirection.VERTICAL,
-              allowSharing: true,
-              enableTts: true,
-            );
-            EpubViewer.open(openFile);
-          }
-        }
-        setState(() {
-          blockButton = true;
-        });
-
-        /** Once we set the state here we will change it so that once 
+                /**If json exists overwrite by getting data from the file otherwise create the file and initial data */
+                if (await File(
+                        stringDestinationDirect + "/" + "local_storage.json")
+                    .exists()) {
+                  writeToFile(singleMap, stringDestinationDirect);
+                } else {
+                  createFile(singleMap, stringDestinationDirect);
+                }
+                setState(() {
+                  downloading = true;
+                });
+              } else {
+                /*Since the file already exists here update the state */
+                /*For viewing we want to view it a differnent way for epubs */
+                String openFile = stringDestinationDirect + "/" + fullFileName;
+                if (extension == ".pdf") {
+                  await OpenFile.open(openFile);
+                } else {
+                  EpubViewer.setConfig(
+                    themeColor: Theme.of(context).primaryColor,
+                    identifier: "iosbook",
+                    scrollDirection: EpubScrollDirection.VERTICAL,
+                    allowSharing: true,
+                    enableTts: true,
+                  );
+                  EpubViewer.open(openFile);
+                }
+                setState(() {
+                  downloading = false;
+                });
+              }
+              /** Once we set the state here we will change it so that once 
          * its passed in again 
         */
-        widget.libraryCallback(blockButton, widget.index);
-      },
-      child: blockButton ? Text("View File") : Text("Add to library"),
-    );
+              // widget.libraryCallback(blockButton, widget.index);
+            },
+            child: doesFileExixt ? Text("View File") : Text("Add to library"),
+          );
+        });
   }
 }
 
@@ -209,7 +233,8 @@ class _Preview_page extends State<Preview_page> {
       fileExistence = await doesFileExist(i);
       if (fileExistence == true) {
         //If a file here exists then it means we only need to show a view of it
-        debugPrint("***************** Current file existence is $fileExistence");
+        debugPrint(
+            "***************** Current file existence is $fileExistence");
         returnList[i] = true;
       }
     }
