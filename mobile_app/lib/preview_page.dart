@@ -23,13 +23,6 @@ import 'dart:developer';
 List dummy_data = [
   {
     "image": "https://images-na.ssl-images-amazon.com/images/I/918s2eM4pSL.jpg",
-    "author": "teripandi",
-    "title": "testTitle5",
-    "file":
-        "http://31.42.184.140/main/179000/20579ec320376304a862de45717badd1/%20-%20Cooking%20-%20Diabetic%20or%20Low-Sugar%20Recipes%20-%20eBook.pdf"
-  },
-  {
-    "image": "https://images-na.ssl-images-amazon.com/images/I/918s2eM4pSL.jpg",
     "author": "Rick Riordan",
     "title": "The Last Olympian",
     "file":
@@ -62,7 +55,7 @@ Future<String> downloadFile(String url, String fileName, String dir) async {
      * so no need to pass that in the parameters 
      */
   try {
-    myUrl = url + '/' + fileName;
+    myUrl = url;
     var request = await httpClient.getUrl(Uri.parse(myUrl));
     var response = await request.close();
     if (response.statusCode == 200) {
@@ -192,6 +185,33 @@ class _Preview_page extends State<Preview_page> {
     setState(() {
       individualButtons[index] = changeBool;
     });
+  }
+
+  /** This is a function that will check our local storage for files to create an intiail state for  
+    * the buttons at the start : without using Future Builder  true = view, false = add to the library
+   */
+  void setButtonDefault(List<bool> initialList) async {
+    bool fileExistence = false;
+    List<bool> returnList = List.filled(dummy_data.length, false);
+    for (int i = 0; i < dummy_data.length; i++) {
+      fileExistence = await doesFileExist(i);
+      if (fileExistence == true) {
+        //If a file here exists then it means we only need to show a view of it
+        debugPrint("***************** Current file existence is $fileExistence");
+        returnList[i] = true;
+      }
+    }
+
+    /** copy this list into the state variable that we have*/
+    setState(() {
+      individualButtons = List.from(returnList);
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    setButtonDefault(individualButtons);
   }
 
   @override
