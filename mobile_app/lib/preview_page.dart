@@ -144,7 +144,7 @@ class _Library_button extends State<Library_button> {
             "title": dummy_data[widget.index]["title"],
             "author": dummy_data[widget.index]["author"],
             "image": dummy_data[widget.index]["image"],
-            "file": stringDestinationDirect + '/' + fullFileName,
+            "file": fullFileName,
             "recent": DateTime.now().toUtc().millisecondsSinceEpoch
           };
 

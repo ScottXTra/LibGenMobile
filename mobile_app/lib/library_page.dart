@@ -75,7 +75,7 @@ Future<List> getBooks(String method) async {
   Directory doucmentsDir = await getApplicationDocumentsDirectory();
   String doucmentsPath = doucmentsDir.path;
   if (!await File('$doucmentsPath/local_storage.json').exists()) {
-    final file = File('$doucmentsPath/local_storage.json');
+    // final file = File('$doucmentsPath/local_storage.json');
     return books;
   }
 
@@ -83,6 +83,7 @@ Future<List> getBooks(String method) async {
   final contents = await json.decode(await file.readAsString());
 
   for (int i = 0; i < contents.length; i++) {
+    contents[i]['file'] = doucmentsPath + "/" + contents[i]['file'];
     books.add(contents[i]);
   }
   books.sort((a, b) {
@@ -122,7 +123,6 @@ class _BooksGridViewState extends State<BooksGridView> {
     return GestureDetector(
       onTap: () {
         String extension = p.extension(bookPath);
-        print(bookPath);
         if (extension == ".pdf") {
           //for opening pdf
           OpenFile.open(bookPath);
