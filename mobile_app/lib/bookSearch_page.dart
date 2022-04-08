@@ -31,6 +31,7 @@ class _HomePageState extends State<book_search> {
   String term = "demo";
   List<BookData> ulist = [];
   List<BookData> userLists = [];
+  bool isLoading = false;
   //API call for All BookData List
 
   String url = 'http://192.168.75.169:3000/search_book?term=';
@@ -110,23 +111,40 @@ class _HomePageState extends State<book_search> {
                     color: Colors.white,
                   ),
                 ),
-                suffixIcon: InkWell(
-                  child: Icon(
-                    Icons.search,
-                    color: Colors.red,
-                  ),
-                ),
+                suffixIcon: isLoading
+                    ? Container(
+                        padding: EdgeInsets.all(13.0),
+                        height: 20.0,
+                        width: 15.0,
+                        child: Center(
+                            child: CircularProgressIndicator(
+                          color: Colors.red,
+                          strokeWidth: 2.5,
+                        )))
+                    : InkWell(
+                        child: Icon(
+                          Icons.search,
+                          color: Colors.red,
+                          size: 32.0,
+                        ),
+                      ),
                 contentPadding: EdgeInsets.all(15.0),
                 hintText: 'Search ',
                 hintStyle: TextStyle(color: Colors.grey[500]),
               ),
               onSubmitted: (string) {
+                setState(() {
+                  print("We are now loading");
+                  isLoading = true;
+                });
                 _debouncer.run(() {
                   term = string.toLowerCase();
                   getAllulistList().then((subjectFromServer) {
                     setState(() {
                       ulist = subjectFromServer;
                       userLists = ulist;
+                      isLoading = false;
+                      print("We are done loading");
                     });
                   });
                 });
