@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+int _rating = 0;
 
 /* Generic button styling settings */
 final ButtonStyle buttonStyle = ElevatedButton.styleFrom(
@@ -17,9 +21,62 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  static const String shareMessage =
-      "Visit our github repository for Libgen Mobile at: https://github.com/ScottXTra/LibGenMobile!";
+
+  static const String shareMessage = "Visit our github repository for Libgen Mobile at: https://github.com/ScottXTra/LibGenMobile!";
   double rating = 0;
+
+  /* Code that gets textfield values and sends a support email from settings page */
+  TextEditingController userPersonalNameController = TextEditingController();
+  TextEditingController userPersonalEmailController = TextEditingController();
+  TextEditingController userMessageController = TextEditingController();
+  Future sendSupportEmail(String userPersonalName, String userPersonalEmail, String userMessage) async {
+    const serviceId = 'service_vg9u6rk';
+    const templateId = 'template_kwy2hq4';
+    const userId = 'xWP1dnMU5OkksqWIY';
+
+    final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
+    final response = await http.post(
+      url,
+      headers: {
+        'origin': 'http://localhost',
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        'service_id': serviceId,
+        'template_id': templateId,
+        'user_id': userId,
+        'template_params': {
+          'user_personal_name': userPersonalName,
+          'user_personal_email': userPersonalEmail,
+          'user_message': userMessage,
+        }
+      }),
+    );
+  }
+
+  /* Code that gets the user entered rating and sends an email */
+  Future sendRatingEmail(int starRating) async {
+    const serviceId = 'service_vg9u6rk';
+    const templateId = 'template_ibuiaxo';
+    const userId = 'xWP1dnMU5OkksqWIY';
+
+    final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
+    final response = await http.post(
+      url,
+      headers: {
+        'origin': 'http://localhost',
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        'service_id': serviceId,
+        'template_id': templateId,
+        'user_id': userId,
+        'template_params': {
+          'star_rating': starRating,
+        }
+      }),
+    );
+  }
 
   /* Function that copies info regarding our app to the clipboard */
   void shareOurApp() {
@@ -58,114 +115,117 @@ class _SettingsPageState extends State<SettingsPage> {
               icon: Icon(Icons.arrow_back, color: Colors.white)),
         ),
         body: SafeArea(
-          child: Center(
-            child: Padding(
-            padding: const EdgeInsets.fromLTRB(0, 30, 0, 10),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      const Text(
-                        "Options",
-                        style: TextStyle(fontSize: 27, color: Colors.white),
-                      ),
-                      AlertDialogButton(
-                          buttonText: "Get Support",
-                          titleText: "Send a message to our developers",
-                          action: shareOurApp,
-                          submitButton: "Send",
-                          mainContent: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: const <Widget>[
-                                TextField(
-                                  cursorColor: Colors.red,
-                                  decoration: InputDecoration(
-                                    hintText: "Enter your name",
-                                    enabledBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.red),
-                                    ),
-                                    focusedBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.red),
-                                    ),
-                                  ),
-                                ),
-                                TextField(
-                                  cursorColor: Colors.red,
-                                  decoration: InputDecoration(
-                                    hintText: "Enter your email",
-                                    enabledBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.red),
-                                    ),
-                                    focusedBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.red),
-                                    ),
-                                  ),
-                                ),
-                                TextField(
-                                  cursorColor: Colors.red,
-                                  decoration: InputDecoration(
-                                    hintText: "Enter your message",
-                                    enabledBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.red),
-                                    ),
-                                    focusedBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.red),
-                                    ),
-                                  ),
-                                ),
-                              ])),
-                      ElevatedButton(
-                        style: buttonStyle,
-                        onPressed: openLibgenSite,
-                        child: const Text("Visit Website"),
-                      ),
-                      AlertDialogButton(
-                        buttonText: "Share",
-                        titleText: "Share with your friends!",
-                        submitButton: "Copy",
-                        action: shareOurApp,
-                        mainContent: const Text(shareMessage),
-                      ),
-                    ]),
-                Column(children: <Widget>[
-                  const Text(
-                    "Rate our app",
-                    style: TextStyle(fontSize: 27, color: Colors.white),
-                  ),
-                  FiveStarRating(),
-                  AlertDialogButton(
-                    buttonText: "Submit",
-                    titleText: "Thank you!",
-                    submitButton: "Ok",
-                    action: shareOurApp,
-                    mainContent: const Text(
-                        "Thanks for the rating, it means a lot to our team at Libgen Mobile!"),
-                  ),
-                ]),
-                Column(children: const <Widget>[
-                  Text(
-                    "About Us",
-                    style: TextStyle(fontSize: 27, color: Colors.white),
-                  ),
-                  Center(
-                      child: Padding(
-                          padding: EdgeInsets.fromLTRB(40, 0, 40, 0),
-                          child: Text(
-                            "We are a small team of five 3rd - 5th year University students at the University of Guelph, and have created this project for our Mobile Development class CIS4030. We believe that everybody should have free access to information, so that was our main inspiration for creating this mobile version of the Libgen Website.",
-                            style: TextStyle(fontSize: 15, color: Colors.white),
-                            textAlign: TextAlign.justify,
-                          ))),
-                ]),
-                const Text(
-                  "©2022 LIBGEN MOBILE, ALL RIGHTS RESERVED, V1.0",
-                  style: TextStyle(fontSize: 10, color: Colors.white),
-                ),
-              ]),
-        ))));
+            child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 30, 0, 10),
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              const Text(
+                                "Options",
+                                style: TextStyle(fontSize: 27, color: Colors.white),
+                              ),
+                              AlertDialogButton(
+                                  buttonText: "Get Support",
+                                  titleText: "Send a message to our developers",
+                                  action: () => sendSupportEmail(userPersonalNameController.text, userPersonalEmailController.text, userMessageController.text),
+                                  submitButton: "Send",
+                                  mainContent: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: <Widget>[
+                                        TextField(
+                                          controller: userPersonalNameController,
+                                          cursorColor: Colors.red,
+                                          decoration: const InputDecoration(
+                                            hintText: "Enter your name",
+                                            enabledBorder: UnderlineInputBorder(
+                                              borderSide: BorderSide(color: Colors.red),
+                                            ),
+                                            focusedBorder: UnderlineInputBorder(
+                                              borderSide: BorderSide(color: Colors.red),
+                                            ),
+                                          ),
+                                        ),
+                                        TextField(
+                                          controller: userPersonalEmailController,
+                                          cursorColor: Colors.red,
+                                          decoration: const InputDecoration(
+                                            hintText: "Enter your email",
+                                            enabledBorder: UnderlineInputBorder(
+                                              borderSide: BorderSide(color: Colors.red),
+                                            ),
+                                            focusedBorder: UnderlineInputBorder(
+                                              borderSide: BorderSide(color: Colors.red),
+                                            ),
+                                          ),
+                                        ),
+                                        TextField(
+                                          controller: userMessageController,
+                                          cursorColor: Colors.red,
+                                          decoration: const InputDecoration(
+                                            hintText: "Enter your message",
+                                            enabledBorder: UnderlineInputBorder(
+                                              borderSide: BorderSide(color: Colors.red),
+                                            ),
+                                            focusedBorder: UnderlineInputBorder(
+                                              borderSide: BorderSide(color: Colors.red),
+                                            ),
+                                          ),
+                                        ),
+                                      ])),
+                              ElevatedButton(
+                                style: buttonStyle,
+                                onPressed: openLibgenSite,
+                                child: const Text("Visit Website"),
+                              ),
+                              AlertDialogButton(
+                                buttonText: "Share",
+                                titleText: "Share with your friends!",
+                                submitButton: "Copy",
+                                action: shareOurApp,
+                                mainContent: const Text(shareMessage),
+                              ),
+                            ]),
+                        Column(children: <Widget>[
+                          const Text(
+                            "Rate our app",
+                            style: TextStyle(fontSize: 27, color: Colors.white),
+                          ),
+                          FiveStarRating(),
+                          AlertDialogButton(
+                            buttonText: "Submit",
+                            titleText: "Thank you!",
+                            submitButton: "Ok",
+                            action: () => sendRatingEmail(_rating),
+                            mainContent: const Text(
+                                "Thanks for the rating, it means a lot to our team at Libgen Mobile!"),
+                          ),
+                        ]),
+                        Column(children: const <Widget>[
+                          Text(
+                            "About Us",
+                            style: TextStyle(fontSize: 27, color: Colors.white),
+                          ),
+                          Center(
+                              child: Padding(
+                                  padding: EdgeInsets.fromLTRB(40, 0, 40, 0),
+                                  child: Text(
+                                    "We are a small team of five 3rd - 5th year University students at the University of Guelph, and have created this project for our Mobile Development class CIS4030. We believe that everybody should have free access to information, so that was our main inspiration for creating this mobile version of the Libgen Website.",
+                                    style: TextStyle(fontSize: 15, color: Colors.white),
+                                    textAlign: TextAlign.justify,
+                                  ))),
+                        ]),
+                        const Text(
+                          "Â©2022 LIBGEN MOBILE, ALL RIGHTS RESERVED, V1.0",
+                          style: TextStyle(fontSize: 10, color: Colors.white),
+                        ),
+                      ]),
+                ))));
   }
 }
 
@@ -173,11 +233,11 @@ class _SettingsPageState extends State<SettingsPage> {
 class AlertDialogButton extends StatelessWidget {
   AlertDialogButton(
       {Key? key,
-      required this.buttonText,
-      required this.titleText,
-      required this.submitButton,
-      required this.mainContent,
-      required this.action})
+        required this.buttonText,
+        required this.titleText,
+        required this.submitButton,
+        required this.mainContent,
+        required this.action})
       : super(key: key);
 
   final String buttonText;
@@ -221,7 +281,6 @@ class FiveStarRating extends StatefulWidget {
 }
 
 class _FiveStarRatingState extends State<FiveStarRating> {
-  int _rating = 0;
 
   void rate(int rating) {
     setState(() {
