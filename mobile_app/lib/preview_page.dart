@@ -12,6 +12,7 @@ import 'package:open_file/open_file.dart';
 import 'package:epub_viewer/epub_viewer.dart';
 import 'dart:convert';
 import 'dart:developer';
+import 'bookSearch_page.dart';
 
 // grey out the button when its already in the directory they are trying to reach
 // need to account for epub files when the button is then changed to "open here"
@@ -75,16 +76,13 @@ Future<String> downloadFile(String url, String fileName, String dir) async {
 /** 
 Page Author: Maaz Syed
 */
-class Preview_page extends StatefulWidget {
-  @override
-  State<Preview_page> createState() => _Preview_page();
-}
 
 class Library_button extends StatefulWidget {
   final int index;
   final Function libraryCallback;
   final List<bool> buttonStates;
-  Library_button({required this.index, required this.libraryCallback, required this.buttonStates});
+  final List<BookData> searchResults;
+  Library_button({required this.index, required this.libraryCallback, required this.buttonStates, required this.searchResults});
 
   @override
   State<Library_button> createState() => _Library_button();
@@ -104,7 +102,7 @@ class _Library_button extends State<Library_button> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: doesFileExist(widget.index),
+        future: doesFileExist(widget.index, widget.searchResults),
         builder: (context, data) {
           if (!data.hasData || data.connectionState == ConnectionState.waiting) {
             return SizedBox(height: 100, width: 100, child: Center(child: CircularProgressIndicator(color: Colors.red)));
@@ -128,9 +126,9 @@ class _Library_button extends State<Library_button> {
               /** Check first if the file we are working with already exists */
               // bool doesFileExixt = await doesFileExist(widget.index);
 
-              String downloadLink = dummy_data[widget.index]["file"];
-              String extension = "." + dummy_data[widget.index]["file"].split(".").last;
-              String fullFileName = dummy_data[widget.index]["title"] + "_" + dummy_data[widget.index]["author"] + extension;
+              String downloadLink = widget.searchResults[widget.index].direct_download_url;
+              String extension = "." + widget.searchResults[widget.index].direct_download_url.split(".").last;
+              String fullFileName = widget.searchResults[widget.index].title + "_" + widget.searchResults[widget.index].author + extension;
               Directory destinationDirect = await getApplicationDocumentsDirectory();
               String stringDestinationDirect = destinationDirect.path;
 
@@ -141,9 +139,9 @@ class _Library_button extends State<Library_button> {
                 downloadFile(downloadLink, fullFileName, stringDestinationDirect);
 
                 Map<String, dynamic> singleMap = {
-                  "title": dummy_data[widget.index]["title"],
-                  "author": dummy_data[widget.index]["author"],
-                  "image": dummy_data[widget.index]["image"],
+                  "title": widget.searchResults[widget.index].title,
+                  "author": widget.searchResults[widget.index].author,
+                  "image": widget.searchResults[widget.index].image_url,
                   "file": fullFileName,
                   "recent": DateTime.now().toUtc().millisecondsSinceEpoch
                 };
@@ -188,15 +186,23 @@ class _Library_button extends State<Library_button> {
   }
 }
 
+class Preview_page extends StatefulWidget {
+  final List<BookData> searchResults;
+  Preview_page({required this.searchResults});
+
+  @override
+  State<Preview_page> createState() => _Preview_page();
+}
+
 /*This class will generate horizontal cards that can 
 be scrolled on either direction based on length of 
 the previous search results */
 class _Preview_page extends State<Preview_page> {
   /** Temporary styles using here for now, can be moved somewhere else later */
-  titles() => const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white);
+  titles() => const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Colors.white);
   info() => const TextStyle(fontSize: 14, color: Colors.red);
-
-  List<bool> individualButtons = List.filled(dummy_data.length, false);
+  sub_info() => const TextStyle(fontSize: 12, color: Colors.white);
+  List<bool> individualButtons = [];
 
   /** This is a callback function thats sent to the buttons to 
    * reflect a change in the array
@@ -210,11 +216,11 @@ class _Preview_page extends State<Preview_page> {
   /** This is a function that will check our local storage for files to create an intiail state for  
     * the buttons at the start : without using Future Builder  true = view, false = add to the library
    */
-  void setButtonDefault(List<bool> initialList) async {
+  void setButtonDefault(List<bool> initialList, List<BookData> searchResults) async {
     bool fileExistence = false;
-    List<bool> returnList = List.filled(dummy_data.length, false);
-    for (int i = 0; i < dummy_data.length; i++) {
-      fileExistence = await doesFileExist(i);
+    List<bool> returnList = List.filled(searchResults.length, false);
+    for (int i = 0; i < searchResults.length; i++) {
+      fileExistence = await doesFileExist(i, searchResults);
       if (fileExistence == true) {
         //If a file here exists then it means we only need to show a view of it
         debugPrint("***************** Current file existence is $fileExistence");
@@ -231,7 +237,30 @@ class _Preview_page extends State<Preview_page> {
   @override
   void initState() {
     super.initState();
-    setButtonDefault(individualButtons);
+    setButtonDefault(individualButtons, widget.searchResults);
+  }
+
+  /** Checks the value of all 3 and only displays publisher. year and page count if it's there */
+  bool isSubInfoNull(String publisher, String year, String pageCount) {
+    if (publisher.isEmpty == true || year.isEmpty == true || pageCount.isEmpty == true) {
+      return true;
+    }
+    return false;
+  }
+
+  _horizontalDivider(double width) {
+    return Container(
+      height: 2,
+      width: width - 30,
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(40.0),
+            topRight: Radius.circular(40.0),
+            bottomLeft: Radius.circular(40.0),
+            bottomRight: Radius.circular(40.0),
+          ),
+          color: Colors.white.withOpacity(0.15)),
+    );
   }
 
   @override
@@ -250,9 +279,15 @@ class _Preview_page extends State<Preview_page> {
          * while allowing the user to snap the card in place
         */
         body: PageView.builder(
-            itemCount: dummy_data.length,
+            itemCount: widget.searchResults.length,
             scrollDirection: Axis.horizontal,
             itemBuilder: (BuildContext context, int index) {
+              /** The sub information, displayed if present*/
+              String publisher = widget.searchResults[index].publisher.toString();
+              String year = widget.searchResults[index].year.toString();
+              String pageCount = widget.searchResults[index].page_count.toString();
+              bool isContentNull = isSubInfoNull(publisher, year, pageCount);
+
               return Container(
                 height: height,
                 width: width,
@@ -282,16 +317,35 @@ class _Preview_page extends State<Preview_page> {
                                 color: Colors.white,
                                 offset: const Offset(5, 5),
                                 sigma: 10,
-                                child: Image.network(dummy_data[index]["image"], width: 250, height: 450))),
+                                child: Image.network(widget.searchResults[index].image_url, width: 250, height: 450))),
                         /*Any further  information regarding the author*/
                         Column(
                           children: [
-                            Text(dummy_data[index]["title"], style: titles()),
+                            Text(widget.searchResults[index].title, textAlign: TextAlign.center, style: titles()),
                             Container(height: 10),
                             Text(
-                              dummy_data[index]["author"],
+                              widget.searchResults[index].author,
                               style: info(),
                             ),
+                            Container(height: isContentNull ? 0 : 15),
+                            isSubInfoNull(publisher, year, pageCount) ? Container(height: 0) : _horizontalDivider(width),
+                            Container(height: isContentNull ? 0 : 15),
+
+                            /** The sub info text */
+                            isContentNull
+                                ? Container(height: 0)
+                                : Text("publisher: " + widget.searchResults[index].publisher.toString(),
+                                    textAlign: TextAlign.center, style: sub_info()),
+                            isContentNull
+                                ? Container(height: 0)
+                                : Text("year: " + widget.searchResults[index].year.toString(),
+                                    textAlign: TextAlign.center, style: sub_info()),
+                            isContentNull
+                                ? Container(height: 0)
+                                : Text("page count: " + widget.searchResults[index].page_count.toString(),
+                                    textAlign: TextAlign.center, style: sub_info()),
+                            Container(height: isContentNull ? 0 : 15),
+                            isSubInfoNull(publisher, year, pageCount) ? Container(height: 0) : _horizontalDivider(width),
                             Container(height: 25),
 
                             /* Container responsible for the elevated button*/
@@ -303,6 +357,7 @@ class _Preview_page extends State<Preview_page> {
                                   index: index,
                                   libraryCallback: changeMainArray,
                                   buttonStates: individualButtons,
+                                  searchResults: widget.searchResults,
                                 )),
                             Container(height: 50)
                           ],
@@ -315,12 +370,12 @@ class _Preview_page extends State<Preview_page> {
 }
 
 /*Function returns the full path to the file, and where its located within the local storage */
-Future<bool> doesFileExist(int index) async {
+Future<bool> doesFileExist(int index, List<BookData> searchResults) async {
   Directory destinationDirectory = await (getApplicationDocumentsDirectory());
   String dest = destinationDirectory.path;
 
-  String extension = "." + dummy_data[index]["file"].split(".").last;
-  String fullPath = dest + "/" + dummy_data[index]["title"] + "_" + dummy_data[index]["author"] + extension; //file to be located is formed
+  String extension = "." + searchResults[index].direct_download_url.split(".").last;
+  String fullPath = dest + "/" + searchResults[index].title + "_" + searchResults[index].author + extension; //file to be located is formed
 
   /** Check if this file currently exists in the local storage */
   if (await File(fullPath).exists()) {
