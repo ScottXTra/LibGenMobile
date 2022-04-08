@@ -33,7 +33,7 @@ class _HomePageState extends State<book_search> {
   List<BookData> userLists = [];
   //API call for All BookData List
 
-  String url = 'http://192.168.2.27:3000/search_book?term=';
+  String url = 'http://192.168.75.169:3000/search_book?term=';
 
   Future<List<BookData>> getAllulistList() async {
     try {
@@ -145,7 +145,7 @@ class _HomePageState extends State<book_search> {
                     Navigator.of(context).push(
                       PageRouteBuilder(
                         opaque: false,
-                        pageBuilder: (context, __, ___) => Preview_page(),
+                        pageBuilder: (context, __, ___) => Preview_page(searchResults: userLists),
                       ),
                     );
                   },
@@ -167,8 +167,7 @@ class _HomePageState extends State<book_search> {
                             title: Text(
                               userLists[index].title,
                               overflow: TextOverflow.ellipsis,
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.white),
+                              style: TextStyle(fontSize: 16, color: Colors.white),
                             ),
                             subtitle: Text(
                               userLists[index].author ?? "null",
@@ -196,18 +195,35 @@ class BookData {
   var id;
   var author;
   String title;
+  String direct_download_url;
+  String image_url;
+  var publisher;
+  var year;
+  var page_count;
+  var language;
 
   BookData({
     required this.id,
     required this.author,
     required this.title,
+    required this.direct_download_url,
+    required this.image_url,
+    required this.publisher,
+    required this.year,
+    required this.page_count,
+    required this.language,
   });
 
   factory BookData.fromJson(Map<dynamic, dynamic> json) {
     return BookData(
-      id: json['id'],
-      author: json['author'],
-      title: json['title'],
-    );
+        id: json['id'],
+        author: json['author'],
+        title: json['title'],
+        direct_download_url: json['direct_download_url'],
+        image_url: json['image_url'],
+        publisher: json['publisher'],
+        year: json['year'],
+        page_count: json['page_count'],
+        language: json['language']);
   }
 }
