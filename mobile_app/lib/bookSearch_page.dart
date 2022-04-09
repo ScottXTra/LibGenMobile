@@ -34,7 +34,7 @@ class _HomePageState extends State<book_search> {
   bool isLoading = false;
   //API call for All BookData List
 
-  String url = 'http://192.168.75.169:3000/search_book?term=';
+  String url = 'http://192.168.67.163:3000/search_book?term=';
 
   Future<List<BookData>> getAllulistList() async {
     try {
@@ -213,23 +213,21 @@ class BookData {
   var id;
   var author;
   String title;
-  String direct_download_url;
-  String image_url;
   var publisher;
   var year;
   var page_count;
   var language;
+  var mirror_url;
 
   BookData({
     required this.id,
     required this.author,
     required this.title,
-    required this.direct_download_url,
-    required this.image_url,
     required this.publisher,
     required this.year,
     required this.page_count,
     required this.language,
+    required this.mirror_url,
   });
 
   factory BookData.fromJson(Map<dynamic, dynamic> json) {
@@ -237,11 +235,10 @@ class BookData {
         id: json['id'],
         author: json['author'],
         title: json['title'],
-        direct_download_url: json['direct_download_url'],
-        image_url: json['image_url'],
         publisher: json['publisher'],
         year: json['year'],
         page_count: json['page_count'],
-        language: json['language']);
+        language: json['language'],
+        mirror_url: json['mirror_url']);
   }
 }

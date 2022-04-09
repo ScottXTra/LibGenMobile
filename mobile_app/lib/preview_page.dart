@@ -13,6 +13,7 @@ import 'package:epub_viewer/epub_viewer.dart';
 import 'dart:convert';
 import 'dart:developer';
 import 'bookSearch_page.dart';
+import 'package:http/http.dart' as http;
 
 // grey out the button when its already in the directory they are trying to reach
 // need to account for epub files when the button is then changed to "open here"
@@ -79,10 +80,9 @@ Page Author: Maaz Syed
 
 class Library_button extends StatefulWidget {
   final int index;
-  final Function libraryCallback;
-  final List<bool> buttonStates;
   final List<BookData> searchResults;
-  Library_button({required this.index, required this.libraryCallback, required this.buttonStates, required this.searchResults});
+  final List<dynamic> additionalJSON;
+  Library_button({required this.index, required this.searchResults, required this.additionalJSON});
 
   @override
   State<Library_button> createState() => _Library_button();
@@ -96,13 +96,12 @@ class _Library_button extends State<Library_button> {
   @override
   void initState() {
     super.initState();
-    // blockButton = widget.buttonStates[widget.index];
   }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: doesFileExist(widget.index, widget.searchResults),
+        future: doesFileExist(widget.index, widget.searchResults, widget.additionalJSON),
         builder: (context, data) {
           if (!data.hasData || data.connectionState == ConnectionState.waiting) {
             return SizedBox(height: 100, width: 100, child: Center(child: CircularProgressIndicator(color: Colors.red)));
@@ -123,11 +122,8 @@ class _Library_button extends State<Library_button> {
                     doesFileExixt ? MaterialStateProperty.all(Colors.grey[700]) : MaterialStateProperty.all(Colors.black.withOpacity(0.3)),
                 shape: MaterialStateProperty.all<RoundedRectangleBorder>(RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)))),
             onPressed: () async {
-              /** Check first if the file we are working with already exists */
-              // bool doesFileExixt = await doesFileExist(widget.index);
-
-              String downloadLink = widget.searchResults[widget.index].direct_download_url;
-              String extension = "." + widget.searchResults[widget.index].direct_download_url.split(".").last;
+              String downloadLink = widget.additionalJSON[widget.index]["direct_url"];
+              String extension = "." + widget.additionalJSON[widget.index]["direct_url"].split(".").last;
               String fullFileName = widget.searchResults[widget.index].title + "_" + widget.searchResults[widget.index].author + extension;
               Directory destinationDirect = await getApplicationDocumentsDirectory();
               String stringDestinationDirect = destinationDirect.path;
@@ -141,7 +137,7 @@ class _Library_button extends State<Library_button> {
                 Map<String, dynamic> singleMap = {
                   "title": widget.searchResults[widget.index].title,
                   "author": widget.searchResults[widget.index].author,
-                  "image": widget.searchResults[widget.index].image_url,
+                  "image": widget.additionalJSON[widget.index]["cover_image"],
                   "file": fullFileName,
                   "recent": DateTime.now().toUtc().millisecondsSinceEpoch
                 };
@@ -202,42 +198,63 @@ class _Preview_page extends State<Preview_page> {
   titles() => const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Colors.white);
   info() => const TextStyle(fontSize: 14, color: Colors.red);
   sub_info() => const TextStyle(fontSize: 12, color: Colors.white);
-  List<bool> individualButtons = [];
-
-  /** This is a callback function thats sent to the buttons to 
-   * reflect a change in the array
-   */
-  void changeMainArray(bool changeBool, int index) {
-    setState(() {
-      individualButtons[index] = changeBool;
-    });
-  }
+  List<dynamic> additionalJSON = [];
+  bool isLoading = false;
 
   /** This is a function that will check our local storage for files to create an intiail state for  
     * the buttons at the start : without using Future Builder  true = view, false = add to the library
    */
-  void setButtonDefault(List<bool> initialList, List<BookData> searchResults) async {
-    bool fileExistence = false;
-    List<bool> returnList = List.filled(searchResults.length, false);
-    for (int i = 0; i < searchResults.length; i++) {
-      fileExistence = await doesFileExist(i, searchResults);
-      if (fileExistence == true) {
-        //If a file here exists then it means we only need to show a view of it
-        debugPrint("***************** Current file existence is $fileExistence");
-        returnList[i] = true;
+  void setButtonDefault(List<BookData> searchResults) async {
+    Map<String, dynamic> localMap = {};
+    List<dynamic> additionalData = [];
+    String url = "http://192.168.67.163:3000/get_download_links?mirror=";
+
+    for (int i = 0; i < widget.searchResults.length; i++) {
+      try {
+        /** Request the image here and the download link via a different endpoint using mirror_url */
+        setState(() {
+          isLoading = true;
+        });
+        final response = await http.get(Uri.parse(url + widget.searchResults[i].mirror_url));
+        if (response.statusCode == 200) {
+          print(response.body);
+          localMap = jsonDecode(response.body);
+          additionalData.add(localMap);
+          print("******Printing map from the request");
+          print(localMap);
+        } else {
+          throw Exception('Error');
+        }
+      } catch (e) {
+        throw Exception(e.toString());
       }
     }
 
+    // bool fileExistence = false;
+    // List<bool> returnList = List.filled(searchResults.length, false);
+    // for (int i = 0; i < searchResults.length; i++) {
+    //   fileExistence = await doesFileExist(i, searchResults, additionalData);
+    //   if (fileExistence == true) {
+    //     //If a file here exists then it means we only need to show a view of it
+    //     debugPrint("***************** Current file existence is $fileExistence");
+    //     returnList[i] = true;
+    //   }
+    // }
+
+    print("******** The final length of the list is ");
+    print(additionalJSON.length);
+
     /** copy this list into the state variable that we have*/
     setState(() {
-      individualButtons = List.from(returnList);
+      additionalJSON = List.from(additionalData);
+      isLoading = false;
     });
   }
 
   @override
   void initState() {
     super.initState();
-    setButtonDefault(individualButtons, widget.searchResults);
+    setButtonDefault(widget.searchResults);
   }
 
   /** Checks the value of all 3 and only displays publisher. year and page count if it's there */
@@ -312,12 +329,14 @@ class _Preview_page extends State<Preview_page> {
                         /* The main image for the book*/
                         Align(
                             alignment: Alignment.topCenter,
-                            child: SimpleShadow(
-                                opacity: 0.1,
-                                color: Colors.white,
-                                offset: const Offset(5, 5),
-                                sigma: 10,
-                                child: Image.network(widget.searchResults[index].image_url, width: 250, height: 450))),
+                            child: isLoading
+                                ? SizedBox(height: 100, width: 100, child: Center(child: CircularProgressIndicator(color: Colors.red)))
+                                : SimpleShadow(
+                                    opacity: 0.1,
+                                    color: Colors.white,
+                                    offset: const Offset(5, 5),
+                                    sigma: 10,
+                                    child: Image.network(additionalJSON[index]["cover_image"], width: 250, height: 450))),
                         /*Any further  information regarding the author*/
                         Column(
                           children: [
@@ -355,9 +374,8 @@ class _Preview_page extends State<Preview_page> {
                                 height: 80,
                                 child: Library_button(
                                   index: index,
-                                  libraryCallback: changeMainArray,
-                                  buttonStates: individualButtons,
                                   searchResults: widget.searchResults,
+                                  additionalJSON: additionalJSON,
                                 )),
                             Container(height: 50)
                           ],
@@ -370,11 +388,11 @@ class _Preview_page extends State<Preview_page> {
 }
 
 /*Function returns the full path to the file, and where its located within the local storage */
-Future<bool> doesFileExist(int index, List<BookData> searchResults) async {
+Future<bool> doesFileExist(int index, List<BookData> searchResults, List<dynamic> additionalJSON) async {
   Directory destinationDirectory = await (getApplicationDocumentsDirectory());
   String dest = destinationDirectory.path;
 
-  String extension = "." + searchResults[index].direct_download_url.split(".").last;
+  String extension = "." + additionalJSON[index]["direct_url"].split(".").last;
   String fullPath = dest + "/" + searchResults[index].title + "_" + searchResults[index].author + extension; //file to be located is formed
 
   /** Check if this file currently exists in the local storage */
