@@ -217,11 +217,8 @@ class _Preview_page extends State<Preview_page> {
         });
         final response = await http.get(Uri.parse(url + widget.searchResults[i].mirror_url));
         if (response.statusCode == 200) {
-          print(response.body);
           localMap = jsonDecode(response.body);
           additionalData.add(localMap);
-          print("******Printing map from the request");
-          print(localMap);
         } else {
           throw Exception('Error');
         }
@@ -240,9 +237,6 @@ class _Preview_page extends State<Preview_page> {
     //     returnList[i] = true;
     //   }
     // }
-
-    print("******** The final length of the list is ");
-    print(additionalJSON.length);
 
     /** copy this list into the state variable that we have*/
     setState(() {
@@ -345,6 +339,7 @@ class _Preview_page extends State<Preview_page> {
                             Text(
                               widget.searchResults[index].author,
                               style: info(),
+                              textAlign: TextAlign.center,
                             ),
                             Container(height: isContentNull ? 0 : 15),
                             isSubInfoNull(publisher, year, pageCount) ? Container(height: 0) : _horizontalDivider(width),
