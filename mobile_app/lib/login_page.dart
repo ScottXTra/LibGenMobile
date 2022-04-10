@@ -45,7 +45,7 @@ class LoginPage extends StatelessWidget {
                   );
                 },
                 padding: EdgeInsets.only(top: 15, bottom: 15),
-                color: Colors.red,
+                color: Color.fromARGB(255, 254,3,55),
                 textColor: Colors.white,
                 child: Text("Get Started".toUpperCase(),
                     style: TextStyle(fontSize: 14)),

@@ -146,10 +146,23 @@ class _BooksGridViewState extends State<BooksGridView> {
               child: Image.network(
                 imageUrl,
                 fit: BoxFit.fill,
+                height: MediaQuery.of(context).size.height / 4,
               ),
             ),
           ),
-          Text(title, style: TextStyle(color: Colors.white)),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+            child: Text(
+              title,
+              maxLines: 2,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 13.5,
+                overflow: TextOverflow.ellipsis,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
         ],
       ),
     );
@@ -216,31 +229,35 @@ class _BooksListViewState extends State<BooksListView> {
                 url,
                 fit: BoxFit.fill,
                 alignment: Alignment.centerLeft,
+                width: MediaQuery.of(context).size.width / 3,
               ),
-              const Spacer(),
-              Container(
-                alignment: Alignment.center,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
+              // const Spacer(),
+              Flexible(
+                child: Container(
+                  padding: EdgeInsets.only(left: 10, right: 10),
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
                       ),
-                    ),
-                    Text(
-                      author,
-                      textAlign: TextAlign.left,
-                      style: TextStyle(color: Colors.red),
-                    ),
-                  ],
+                      Text(
+                        author,
+                        textAlign: TextAlign.left,
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const Spacer(),
+              // const Spacer(),
             ],
           ),
         ),

@@ -18,34 +18,6 @@ import 'package:http/http.dart' as http;
 // grey out the button when its already in the directory they are trying to reach
 // need to account for epub files when the button is then changed to "open here"
 
-/** 
- * DUMMY DATA : List Dummy_data
- * 
- */
-List dummy_data = [
-  {
-    "image": "https://images-na.ssl-images-amazon.com/images/I/918s2eM4pSL.jpg",
-    "author": "Rick Riordan",
-    "title": "The Last Olympian",
-    "file":
-        "http://31.42.184.140/main/480000/cdd04c59e2f8e0f34488ca3dc4278ede/%28Percy%20Jackson%20and%20the%20Olympians%205%29%20Rick%20Riordan%20-%20The%20Last%20Olympian%20%28Percy%20Jackson%20%26%20the%20Olympians%2C%20Book%205%29-Disney%20Hyperion%20Books%20for%20Children%20%282009%29.pdf"
-  },
-  {
-    "image": "https://images-na.ssl-images-amazon.com/images/I/91RQ5d-eIqL.jpg",
-    "author": "Rick Riordan",
-    "title": "The Lightning Thief",
-    "file":
-        "http://31.42.184.140/main/737000/3cf9de57b22129d085748d6169787b0e/Rick%20Riordan%20-%20The%20Lightning%20Thief%20%28Percy%20Jackson%20and%20the%20Olympians%2C%20Book%201%29%20%20-Disney-Hyperion%20%282005%29.epub"
-  },
-  {
-    "image": "https://images-na.ssl-images-amazon.com/images/I/9117OFw0G4L.jpg",
-    "author": "Rick Riordan",
-    "title": "The Sea of Monsters",
-    "file":
-        "http://31.42.184.140/main/773000/cc8bdd3cf019c5267d33c9eb68ac56a2/%28Percy%20Jackson%20%26%20the%20Olympians%202%29%20Rick%20Riordan%20-%20The%20Sea%20of%20Monsters%20%20-Disney-Hyperion%20%282006%29.epub"
-  },
-];
-
 /** These functions correlate to the async for accessing the phones local storage */
 Future<String> downloadFile(String url, String fileName, String dir) async {
   HttpClient httpClient = new HttpClient();
@@ -184,7 +156,8 @@ class _Library_button extends State<Library_button> {
 
 class Preview_page extends StatefulWidget {
   final List<BookData> searchResults;
-  Preview_page({required this.searchResults});
+  final int index;
+  Preview_page({required this.searchResults, required this.index});
 
   @override
   State<Preview_page> createState() => _Preview_page();
@@ -279,7 +252,7 @@ class _Preview_page extends State<Preview_page> {
     /** Grab any accurate device dimensions */
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
-
+    final controller = PageController(initialPage: widget.index);
     return Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
@@ -290,6 +263,7 @@ class _Preview_page extends State<Preview_page> {
          * while allowing the user to snap the card in place
         */
         body: PageView.builder(
+          controller: controller,
             itemCount: widget.searchResults.length,
             scrollDirection: Axis.horizontal,
             itemBuilder: (BuildContext context, int index) {

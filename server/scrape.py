@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import warnings
 from time import sleep, perf_counter
 from threading import Thread
+import re
 
 
 warnings.filterwarnings("ignore", category=UserWarning, module='bs4')
@@ -43,6 +44,10 @@ def search_books(title):
         book['id'] = attrbutes[0].get_text()
         book['author'] = attrbutes[1].get_text()
         book['title'] = attrbutes[2].get_text()
+        
+        title_without_isbn = re.sub('[0-9,-]{5,}', '', book['title']).strip()
+        book['title'] = ' '.join(title_without_isbn.split())
+
         book['publisher'] = attrbutes[3].get_text()
         book['year'] = attrbutes[4].get_text()
         book['page_count'] = attrbutes[5].get_text()
@@ -56,9 +61,6 @@ def search_books(title):
     return json.dumps(books_list)    
 
 
-
-
-print(get_CF_pdf("http://library.lol/main/7505F8354A1B33D6B90B248A7007863C")
-)
+# print(get_CF_pdf("http://library.lol/main/7505F8354A1B33D6B90B248A7007863C"))
 
 
