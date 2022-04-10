@@ -28,7 +28,7 @@ class Debouncer {
 
 class _HomePageState extends State<book_search> {
   final _debouncer = Debouncer();
-  String term = "demo";
+  String term = "";
   List<BookData> ulist = [];
   List<BookData> userLists = [];
   bool isLoading = false;
@@ -151,6 +151,10 @@ class _HomePageState extends State<book_search> {
               },
             ),
           ),
+          if (userLists.length == 0) Spacer(),
+          if (userLists.length == 0) Center(child: Text("No Results", style: TextStyle(color: Colors.white, fontSize: 25),)),
+          if (userLists.length == 0) Spacer()
+          else
           Expanded(
             child: ListView.builder(
               shrinkWrap: true,
@@ -163,7 +167,7 @@ class _HomePageState extends State<book_search> {
                     Navigator.of(context).push(
                       PageRouteBuilder(
                         opaque: false,
-                        pageBuilder: (context, __, ___) => Preview_page(searchResults: userLists),
+                        pageBuilder: (context, __, ___) => Preview_page(searchResults: userLists, index: index),
                       ),
                     );
                   },
