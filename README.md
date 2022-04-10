@@ -9,7 +9,7 @@ The following outlines the easiest way to run the complete app ( as per the demo
      - cd into server 
      - type `flask run --host=0.0.0.0 -p 3000` into the command line
 
-4. Type `cd..` to go back to the `LibGenMobile` directory
+4. Type `cd ..` to go back to the `LibGenMobile` directory
 
 5. Run the mobile application
      - cd into mobile_app
