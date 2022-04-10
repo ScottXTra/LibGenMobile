@@ -9,7 +9,7 @@ The following outlines the easiest way to run the complete app ( as per the demo
      - cd into server 
      - type `flask run --host=0.0.0.0 -p 3000` into the command line
 
-4. Run the mobile application
+4. Run the mobile application:
      - In a different terminal session, cd into mobile_app
      - type `flutter run`
 
