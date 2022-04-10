@@ -34,7 +34,7 @@ class _HomePageState extends State<book_search> {
   bool isLoading = false;
   //API call for All BookData List
 
-  String url = 'http://192.168.67.163:3000/search_book?term=';
+  String url = 'http://localhost:3000/search_book?term=';
 
   Future<List<BookData>> getAllulistList() async {
     try {

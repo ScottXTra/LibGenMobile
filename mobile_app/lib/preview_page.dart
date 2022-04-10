@@ -207,7 +207,7 @@ class _Preview_page extends State<Preview_page> {
   void setButtonDefault(List<BookData> searchResults) async {
     Map<String, dynamic> localMap = {};
     List<dynamic> additionalData = [];
-    String url = "http://192.168.67.163:3000/get_download_links?mirror=";
+    String url = "http://localhost:3000/get_download_links?mirror=";
 
     for (int i = 0; i < widget.searchResults.length; i++) {
       try {
