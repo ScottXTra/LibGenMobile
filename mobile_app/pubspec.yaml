@@ -41,6 +41,7 @@ dependencies:
   simple_shadow: ^0.3.0
   url_launcher: ^6.0.3
   flutter_downloader: ^1.7.2
+  splash_screen_view: ^3.0.0
 
 dev_dependencies:
   flutter_test:

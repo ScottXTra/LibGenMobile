@@ -1,12 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:splash_screen_view/SplashScreenView.dart';
 import 'bookSearch_page.dart';
 import 'library_page.dart';
 import 'login_page.dart';
 import 'preview_page.dart';
 
+
 void main() {
   runApp(MaterialApp(
-    home: LoginPage(),
+    home: SplashScreenView(
+      navigateRoute: ListViewBuilder(),
+      duration: 3000,
+      imageSize: 500,
+      imageSrc: "assets/webookslogo.png",
+      text: "WeBooks",
+      textType: TextType.NormalText,
+      textStyle: TextStyle(
+        fontSize: 38.0,
+        color: Colors.white
+      ),
+      backgroundColor: Colors.grey[900],
+    ),
     debugShowCheckedModeBanner: false,
   ));
 }
