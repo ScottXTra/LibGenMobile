@@ -13,10 +13,10 @@ void main() {
       duration: 3000,
       imageSize: 500,
       imageSrc: "assets/webookslogo.png",
-      text: "WeBooks",
+      text: "Welcome to WeBooks",
       textType: TextType.NormalText,
       textStyle: TextStyle(
-        fontSize: 38.0,
+        fontSize: 30.0,
         color: Colors.white
       ),
       backgroundColor: Colors.grey[900],
