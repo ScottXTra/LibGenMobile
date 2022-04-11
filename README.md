@@ -10,9 +10,10 @@ The following outlines the easiest way to run the complete app ( as per the demo
      - You should see something similar to : `Running on http://172.26.1.253:3000/ (Press CTRL+C to quit)`
      - Copy paste this and head to the following : 
      
-4. `cd..` to get out of the server directory and cd into mobile_app/bookSearch_page.dart 
-     - Here navgiate to line 36 which will look like : `String url = 'http://192.168.2.27:3000/search_book?term=';`
-     - Here you will replace `192.168.2.27:3000` with the ip flask had shown you earlier `example: 172.26.1.253:3000` and save the file 
+4. `cd..` to get out of the server directory and cd into mobile_app/
+     - Here navgiate to line 37 in bookSearch_page.dart which will look like : `String url = 'http://192.168.2.27:3000/search_book?term=';`
+     - Here you will replace `192.168.2.27:3000` with the ip flask had shown you earlier `example: 172.26.1.253:3000` and save the file
+     - Replace the same string on line 183 in preview_page.dart with the ip in flask
 
 5. flutter run 
 
