@@ -8,18 +8,15 @@ LibGenMobile is a mobile interface for the https://libgen.is/. It was created th
 ![image](https://user-images.githubusercontent.com/39224367/164113171-aaa8cbd1-3134-4494-8218-f66b45cef4c0.png)
 
 
-The following outlines the easiest way to run the complete app ( as per the demo ):
-#### MacPorts
-
-
+# Install
 `git clone https://github.com/ScottXTra/LibGenMobile.git
-cd LibGenMobile
-`
-Running the server
+cd LibGenMobile`
+
+# Running the server
 `cd server 
 flask run --host=0.0.0.0 -p 3000`
 
-Running the mobile app
+# Running the mobile app
 `cd mobile_app
 flutter run`
 
