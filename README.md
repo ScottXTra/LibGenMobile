@@ -9,6 +9,10 @@ LibGenMobile is a mobile interface for the https://libgen.is/. It was created th
 
 
 The following outlines the easiest way to run the complete app ( as per the demo ):
+#### MacPorts
+
+`git clone https://github.com/ScottXTra/LibGenMobile.git` 
+
 1. Git clone this repo anywhere you want 
 2. cd into the `LibGenMobile` directory 
 
