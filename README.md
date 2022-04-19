@@ -1,6 +1,6 @@
 # LibGenMobile
 
-#About
+# About
 LibGenMobile is a mobile interface for the https://libgen.is/. It was created through reverse engineering and creating a wrapper for the basic functinality of the website to bring it to mobile. This was a project for CIS-4030 in which we recieved ~96% grade for the project.
 
 ![image](https://user-images.githubusercontent.com/39224367/164112960-d7edbeee-5328-45eb-b8f5-ebe5cc3fd4c6.png)
